@@ -77,6 +77,14 @@ The **Academic-MS** microservice is responsible for managing all academic-relate
   - Create and maintain academic timetables.  
   - Seamlessly integrate with Operations-MS for event schedulin
 
+## Installation
+
+To set up ACADEMIC-MS locally, follow these steps:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/fatimaelasri01/Operations-MS.git
+
 Below are the repositories for the six microservices:  
 
 1. **[IAM-MS Repository](#)**  
