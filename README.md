@@ -83,7 +83,7 @@ To set up ACADEMIC-MS locally, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/fatimaelasri01/Operations-MS.git
+   git clone https://github.com/fatimaelasri01/Academic-MS.git
 
 Below are the repositories for the six microservices:  
 
