@@ -20,6 +20,7 @@ public class StudentDto extends IamDto {
     private Long classId;
     private Date admissionDate; 
     private String academicStatus;
+    private boolean assurance;
     private Long parentId;
     private String parentName;
     private String parentContact;

@@ -14,5 +14,7 @@ public interface StudentAcademicProfileRepository extends JpaRepository<StudentA
     List<StudentAcademicProfile> findByAcademicStatus(String academicStatus);
     List<StudentAcademicProfile> findByStudentId(Long studentId);
     List<StudentAcademicProfile> findByCne(String cne);
-    List<StudentAcademicProfile> findByAdmissionDate(Date admissionDate); 
+    List<StudentAcademicProfile> findByAdmissionDate(Date admissionDate);
+    
+    List<StudentAcademicProfile> findByParentEmail(String parentEmail);
 }

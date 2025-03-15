@@ -43,6 +43,8 @@ public class UserDto {
 
     private String academicStatus;
 
+    private boolean assurance;
+
     //informations de l'utilisateur parent
     private String parentUsername;
 

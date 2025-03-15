@@ -1,5 +1,7 @@
 package pfe.mandomati.academicms.Service.Impl;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -39,10 +41,8 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public ResponseEntity<String> registerUser(UserDto userDTO) {
-
         Long studentId = null;
         Long parentId = null;
-
         try {
             // Ajouter l'étudiant dans IAMMS
             IamDto.Role studentRole = IamDto.Role.builder()
@@ -77,40 +77,49 @@ public class StudentServiceImpl implements StudentService {
             studentId = extractIdFromResponse(studentResponse.getBody());
             logger.info("studentId: {}", studentId);
 
-            // Ajouter le parent dans IAMMS
-            IamDto.Role parentRole = IamDto.Role.builder()
-                    .id(6L)
-                    .name("PARENT")
-                    .build();
+            // Vérifier si le parent existe déjà dans la base de données
+            List<StudentAcademicProfile> existingParentProfiles = studentAcademicProfileRepository.findByParentEmail(userDTO.getParentEmail());
+            if (existingParentProfiles.isEmpty()) {
+                // Ajouter le parent dans IAMMS
+                IamDto.Role parentRole = IamDto.Role.builder()
+                        .id(6L)
+                        .name("PARENT")
+                        .build();
 
-            IamDto iamParentDto = IamDto.builder()
-                    .username(userDTO.getParentUsername())
-                    .lastname(userDTO.getParentFirstname())
-                    .firstname(userDTO.getParentLastname())
-                    .email(userDTO.getParentEmail())
-                    .password(userDTO.getParentPassword())
-                    .status(userDTO.isParentStatus())
-                    .address(userDTO.getParentAddress())
-                    .birthDate(userDTO.getParentBirthDate())
-                    .city(userDTO.getParentCity())
-                    .createdAt(userDTO.getCreatedAt())
-                    .role(parentRole) // Utilisation de l'objet Role
-                    .build();
+                IamDto iamParentDto = IamDto.builder()
+                        .username(userDTO.getParentUsername())
+                        .lastname(userDTO.getParentFirstname())
+                        .firstname(userDTO.getParentLastname())
+                        .email(userDTO.getParentEmail())
+                        .password(userDTO.getParentPassword())
+                        .status(userDTO.isParentStatus())
+                        .address(userDTO.getParentAddress())
+                        .birthDate(userDTO.getParentBirthDate())
+                        .city(userDTO.getParentCity())
+                        .createdAt(userDTO.getCreatedAt())
+                        .role(parentRole) // Utilisation de l'objet Role
+                        .build();
 
-            logger.info("Sending parent data to IAMMS: {}", iamParentDto);
+                logger.info("Sending parent data to IAMMS: {}", iamParentDto);
 
-            ResponseEntity<String> parentResponse = iamClient.registerUser(iamParentDto);
-            if (!parentResponse.getStatusCode().is2xxSuccessful()) {
-                logger.error("Failed to create parent in IAMMS. Deleting student from IAMMS: {}", userDTO.getUsername());
-                iamClient.deleteUser(userDTO.getUsername());
-                throw new RuntimeException("Failed to create parent in IAMMS");
+                ResponseEntity<String> parentResponse = iamClient.registerUser(iamParentDto);
+                if (!parentResponse.getStatusCode().is2xxSuccessful()) {
+                    logger.error("Failed to create parent in IAMMS. Deleting student from IAMMS: {}", userDTO.getUsername());
+                    iamClient.deleteUser(URLEncoder.encode(userDTO.getUsername(), StandardCharsets.UTF_8.toString()));
+                    throw new RuntimeException("Failed to create parent in IAMMS");
+                }
+
+                logger.info("parent register in IAMMS: {}", parentResponse.getBody());
+
+                // Extraire l'ID de la réponse
+                parentId = extractIdFromResponse(parentResponse.getBody());
+                logger.info("parentId: {}", parentId);
+            } else {
+                // Utiliser le premier profil parent trouvé
+                StudentAcademicProfile existingParentProfile = existingParentProfiles.get(0);
+                parentId = existingParentProfile.getParentId();
+                logger.info("Parent already exists in academicms: {}", existingParentProfile);
             }
-
-            logger.info("parent register in IAMMS: {}", parentResponse.getBody());
-
-            // Extraire l'ID de la réponse
-            parentId = extractIdFromResponse(parentResponse.getBody());
-            logger.info("parentId: {}", parentId);
 
             StudentAcademicProfile studentProfile = StudentAcademicProfile.builder()
                     .cne(userDTO.getCne())
@@ -121,7 +130,7 @@ public class StudentServiceImpl implements StudentService {
                     .parentId(parentId)
                     .parentName(userDTO.getParentFirstname() + " " + userDTO.getParentLastname())
                     .parentContact(userDTO.getParentContact())
-                    .parentemail(userDTO.getParentEmail())
+                    .parentEmail(userDTO.getParentEmail())
                     .build();
 
             logger.info("save studentprofile {}", studentProfile);
@@ -137,7 +146,7 @@ public class StudentServiceImpl implements StudentService {
             // Supprimer le parent et l'étudiant de IAMMS en cas d'erreur
             if (parentId != null) {
                 try {
-                    iamClient.deleteUser(userDTO.getParentUsername());
+                    iamClient.deleteUser(URLEncoder.encode(userDTO.getParentUsername(), StandardCharsets.UTF_8.toString()));
                     logger.info("Deleted parent from IAMMS: {}", userDTO.getParentUsername());
                 } catch (Exception ex) {
                     logger.error("Failed to delete parent from IAMMS", ex);
@@ -145,7 +154,7 @@ public class StudentServiceImpl implements StudentService {
             }
             if (studentId != null) {
                 try {
-                    iamClient.deleteUser(userDTO.getUsername());
+                    iamClient.deleteUser(URLEncoder.encode(userDTO.getUsername(), StandardCharsets.UTF_8.toString()));
                     logger.info("Deleted student from IAMMS: {}", userDTO.getUsername());
                 } catch (Exception ex) {
                     logger.error("Failed to delete student from IAMMS", ex);
@@ -164,7 +173,6 @@ public class StudentServiceImpl implements StudentService {
             throw new RuntimeException("Failed to extract ID from response: " + responseBody);
         }
     }
-
 
     @Override
     public List<StudentDto> getAllStudents() {

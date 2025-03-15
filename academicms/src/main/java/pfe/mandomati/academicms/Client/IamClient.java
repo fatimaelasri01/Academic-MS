@@ -22,6 +22,9 @@ public interface IamClient {
     @PostMapping("/api/auth/register")
     ResponseEntity<String> registerUser(@RequestBody IamDto userDto);
 
+    @GetMapping("/api/auth/user/{email}")
+    ResponseEntity<String> checkUserExists(@PathVariable String email);
+
     @GetMapping("/api/auth/user/role/student/{id}")
     ResponseEntity<IamDto> getStudentById(@PathVariable("id") String id);
     

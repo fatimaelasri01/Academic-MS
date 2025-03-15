@@ -27,11 +27,12 @@ public class StudentAcademicProfile {
 
     private Date admissionDate; 
     private String academicStatus;
+    private boolean assurance;
 
     @Column(nullable = false)
     private Long parentId;
     
     private String parentName;
     private String parentContact;
-    private String parentemail;
+    private String parentEmail;
 }

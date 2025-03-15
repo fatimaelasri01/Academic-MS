@@ -1,11 +1,14 @@
 package pfe.mandomati.academicms.Controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import pfe.mandomati.academicms.Dto.StudentDto;
 import pfe.mandomati.academicms.Dto.UserDto;
 import pfe.mandomati.academicms.Service.StudentService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +30,11 @@ public class StudentController {
         return studentService.registerUser(userDto);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'RH')")
+    @GetMapping("all")
+    public List<StudentDto> getAllStudents() {
+        return studentService.getAllStudents();
+    }
     @GetMapping("test")
     public String test() {
         return "test";
