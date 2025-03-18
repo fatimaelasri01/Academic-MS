@@ -13,7 +13,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class StudentDto extends IamDto {
+public class StudentDto {
     // Données académiques spécifiques
     private Long studentId; // Même ID que dans IAM-MS
     private String cne;

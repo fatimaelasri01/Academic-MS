@@ -18,4 +18,6 @@ public interface StudentService {
     List<StudentDto> getStudentsByAdmissionDate(Date admissionDate);
 
     ResponseEntity<String> registerUser(UserDto userDTO);
+    ResponseEntity<String> updateStudent(Long id, UserDto userDto);
+    ResponseEntity<String> deleteStudent(Long id);
 }

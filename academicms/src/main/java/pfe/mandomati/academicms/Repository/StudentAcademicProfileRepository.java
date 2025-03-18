@@ -17,4 +17,5 @@ public interface StudentAcademicProfileRepository extends JpaRepository<StudentA
     List<StudentAcademicProfile> findByAdmissionDate(Date admissionDate);
     
     List<StudentAcademicProfile> findByParentEmail(String parentEmail);
+    List<StudentAcademicProfile> findByParentId(Long parentId);
 }

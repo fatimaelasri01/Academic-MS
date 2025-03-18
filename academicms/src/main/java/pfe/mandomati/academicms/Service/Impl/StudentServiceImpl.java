@@ -164,6 +164,106 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+    @Override
+    @Transactional
+    public ResponseEntity<String> updateStudent(Long id, UserDto userDto) {
+        try {
+            StudentAcademicProfile existingStudentProfile = studentAcademicProfileRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            // Mettre à jour les informations de l'étudiant dans IAMMS
+            IamDto iamStudentDto = IamDto.builder()
+                    .username(userDto.getUsername())
+                    .lastname(userDto.getLastname())
+                    .firstname(userDto.getFirstname())
+                    .email(userDto.getEmail())
+                    .password(userDto.getPassword())
+                    .status(userDto.isStatus())
+                    .address(userDto.getAddress())
+                    .birthDate(userDto.getBirthDate())
+                    .city(userDto.getCity())
+                    .createdAt(userDto.getCreatedAt())
+                    .role(IamDto.Role.builder().id(5L).name("STUDENT").build()) // Utilisation de l'objet Role
+                    .build();
+
+            iamClient.editUser(URLEncoder.encode(userDto.getUsername(), StandardCharsets.UTF_8.toString()), iamStudentDto);
+
+            // Mettre à jour les informations de l'étudiant dans Academic-MS
+            existingStudentProfile.setCne(userDto.getCne());
+            existingStudentProfile.setClassId(classRepository.findIdByName(userDto.getClassName()));
+            existingStudentProfile.setAdmissionDate(userDto.getAdmissionDate());
+            existingStudentProfile.setAcademicStatus(userDto.getAcademicStatus());
+            existingStudentProfile.setAssurance(userDto.isAssurance());
+            existingStudentProfile.setParentId(existingStudentProfile.getParentId());
+            existingStudentProfile.setParentName(userDto.getParentFirstname() + " " + userDto.getParentLastname());
+            existingStudentProfile.setParentContact(userDto.getParentContact());
+            existingStudentProfile.setParentEmail(userDto.getParentEmail());
+
+            studentAcademicProfileRepository.save(existingStudentProfile);
+
+            // Mettre à jour les informations du parent dans IAMMS
+            IamDto iamParentDto = IamDto.builder()
+                    .username(userDto.getParentUsername())
+                    .lastname(userDto.getParentFirstname())
+                    .firstname(userDto.getParentLastname())
+                    .email(userDto.getParentEmail())
+                    .password(userDto.getParentPassword())
+                    .status(userDto.isParentStatus())
+                    .address(userDto.getParentAddress())
+                    .birthDate(userDto.getParentBirthDate())
+                    .city(userDto.getParentCity())
+                    .createdAt(userDto.getCreatedAt())
+                    .role(IamDto.Role.builder().id(6L).name("PARENT").build()) // Utilisation de l'objet Role
+                    .build();
+
+            iamClient.editUser(URLEncoder.encode(userDto.getParentUsername(), StandardCharsets.UTF_8.toString()), iamParentDto);
+
+            // Mettre à jour les informations du parent pour tous les étudiants liés
+            List<StudentAcademicProfile> parentProfiles = studentAcademicProfileRepository.findByParentId(existingStudentProfile.getParentId());
+            for (StudentAcademicProfile profile : parentProfiles) {
+                profile.setParentName(userDto.getParentFirstname() + " " + userDto.getParentLastname());
+                profile.setParentContact(userDto.getParentContact());
+                profile.setParentEmail(userDto.getParentEmail());
+                studentAcademicProfileRepository.save(profile);
+            }
+
+            return ResponseEntity.ok("Student updated successfully");
+        } catch (Exception e) {
+            logger.error("Failed to update student", e);
+            throw new RuntimeException("Failed to update student", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<String> deleteStudent(Long id) {
+        try {
+            StudentAcademicProfile existingStudentProfile = studentAcademicProfileRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            Long parentId = existingStudentProfile.getParentId();
+            String studentUsername = existingStudentProfile.getParentEmail();
+            studentAcademicProfileRepository.deleteById(id);
+
+            // Supprimer l'étudiant de IAMMS
+            iamClient.deleteUser(URLEncoder.encode(studentUsername, StandardCharsets.UTF_8.toString()));
+            logger.info("Deleted student from IAMMS: {}", studentUsername);
+
+            // Vérifier si le parent est lié à d'autres étudiants
+            List<StudentAcademicProfile> remainingProfiles = studentAcademicProfileRepository.findByParentId(parentId);
+            if (remainingProfiles.isEmpty()) {
+                // Supprimer le parent de IAMMS
+                iamClient.deleteUser(URLEncoder.encode(existingStudentProfile.getParentEmail(), StandardCharsets.UTF_8.toString()));
+                logger.info("Deleted parent from IAMMS: {}", existingStudentProfile.getParentEmail());
+            }
+
+            return ResponseEntity.ok("Student deleted successfully");
+        } catch (Exception e) {
+            logger.error("Failed to delete student", e);
+            throw new RuntimeException("Failed to delete student", e);
+        }
+    }
+
     private Long extractIdFromResponse(String responseBody) {
         Pattern pattern = Pattern.compile("ID: (\\d+)");
         Matcher matcher = pattern.matcher(responseBody);
@@ -176,8 +276,19 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentDto> getAllStudents() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllStudents'");
+        return studentAcademicProfileRepository.findAll().stream()
+                .map(s -> new StudentDto(
+                        s.getStudentId(),
+                        s.getCne(),
+                        s.getClassId(),
+                        s.getAdmissionDate(),
+                        s.getAcademicStatus(),
+                        false, s.getParentId(),
+                                                s.getParentName(),
+                                                s.getParentContact(),
+                                                s.getParentEmail(), null, null
+                ))
+                .toList();
     }
 
     @Override

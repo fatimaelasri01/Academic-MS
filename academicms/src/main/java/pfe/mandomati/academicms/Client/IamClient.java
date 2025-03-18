@@ -44,9 +44,9 @@ public interface IamClient {
     ResponseEntity<List<IamDto>> getAllParents();
 
     @PutMapping("/api/auth/user/edit/{username}")
-    IamDto editUser(@PathVariable String username, @RequestBody UserDto userDto);
+    ResponseEntity<String> editUser(@PathVariable String username, @RequestBody IamDto userDto);
 
     @DeleteMapping("/api/auth/user/delete/{username}")
-    void deleteUser(@PathVariable String username);
+    ResponseEntity<String> deleteUser(@PathVariable String username);
 
 }
