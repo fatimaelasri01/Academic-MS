@@ -27,31 +27,36 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'RH')")
+    // create student
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @PostMapping("create")
     public ResponseEntity<String> createStudent(@RequestBody UserDto userDto) {
         return studentService.registerUser(userDto);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'RH')")
+    // get all students
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @GetMapping("all")
     public List<StudentDto> getAllStudents() {
         return studentService.getAllStudents();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'RH')")
-    @GetMapping("student/{id}")
+    // get student by id
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+    @GetMapping("/{id}")
     public StudentDto getStudentById(Long id) {
         return studentService.getStudentByStudentId(id);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'RH')")
+    // update student
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @PutMapping("update/{id}")
     public ResponseEntity<String> updateStudent(@PathVariable Long id, @RequestBody UserDto userDto) {
         return studentService.updateStudent(id, userDto);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'RH')")
+    // delete student
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @DeleteMapping("delete/{id}")
     public ResponseEntity<String> deleteStudent(@PathVariable Long id) {
         return studentService.deleteStudent(id);

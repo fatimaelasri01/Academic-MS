@@ -4,8 +4,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -276,25 +278,63 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentDto> getAllStudents() {
-        return studentAcademicProfileRepository.findAll().stream()
-                .map(s -> new StudentDto(
-                        s.getStudentId(),
-                        s.getCne(),
-                        s.getClassId(),
-                        s.getAdmissionDate(),
-                        s.getAcademicStatus(),
-                        false, s.getParentId(),
-                                                s.getParentName(),
-                                                s.getParentContact(),
-                                                s.getParentEmail(), null, null
-                ))
-                .toList();
+        try {
+            List<IamDto> iamStudents = iamClient.getAllStudents().getBody();
+            if (iamStudents == null) {
+                throw new RuntimeException("Failed to retrieve students from IAMMS");
+            }
+            logger.info("Retrieved students from IAMMS: {}", iamStudents);
+            return iamStudents.stream().map(iamStudent -> {
+                logger.info("Processing IAM student: {}", iamStudent);
+                if (iamStudent.getId() == null) {
+                    logger.error("Student ID is null for IAM student: {}", iamStudent);
+                    throw new RuntimeException("Student ID is null for IAM student");
+                }
+                Optional<StudentAcademicProfile> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
+                StudentAcademicProfile profile = profileOptional.orElseThrow(() -> 
+                    new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
+                return StudentDto.builder()
+                        .id(iamStudent.getId())
+                        .cne(profile.getCne())
+                        .username(iamStudent.getUsername())
+                        .firstname(iamStudent.getFirstname())
+                        .lastname(iamStudent.getLastname())
+                        .email(iamStudent.getEmail())
+                        .city(iamStudent.getCity())
+                        .assurance(profile.isAssurance())
+                        .build();
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Failed to get all students", e);
+            throw new RuntimeException("Failed to get all students", e);
+        }
     }
 
     @Override
     public StudentDto getStudentByStudentId(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStudentByStudentId'");
+        try {
+            ResponseEntity<IamDto> responseEntity = iamClient.getStudentById(id.toString());
+            IamDto iamStudent = responseEntity.getBody();
+            if (iamStudent == null) {
+                throw new RuntimeException("Failed to retrieve student from IAMMS for id: " + id);
+            }
+            Optional<StudentAcademicProfile> profileOptional = studentAcademicProfileRepository.findById(id);
+            StudentAcademicProfile profile = profileOptional.orElseThrow(() -> 
+                new RuntimeException("Student profile not found for studentId: " + id));
+            return StudentDto.builder()
+                    .id(iamStudent.getId())
+                    .cne(profile.getCne())
+                    .username(iamStudent.getUsername())
+                    .firstname(iamStudent.getFirstname())
+                    .lastname(iamStudent.getLastname())
+                    .email(iamStudent.getEmail())
+                    .city(iamStudent.getCity())
+                    .assurance(profile.isAssurance())
+                    .build();
+        } catch (Exception e) {
+            logger.error("Failed to get student by id", e);
+            throw new RuntimeException("Failed to get student by id", e);
+        }
     }
 
     @Override

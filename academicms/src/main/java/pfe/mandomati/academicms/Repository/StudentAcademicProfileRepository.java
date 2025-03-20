@@ -12,8 +12,7 @@ import java.util.List;
 public interface StudentAcademicProfileRepository extends JpaRepository<StudentAcademicProfile, Long> {
     List<StudentAcademicProfile> findByClassId(Long classId);
     List<StudentAcademicProfile> findByAcademicStatus(String academicStatus);
-    List<StudentAcademicProfile> findByStudentId(Long studentId);
-    List<StudentAcademicProfile> findByCne(String cne);
+    StudentAcademicProfile findByCne(String cne);
     List<StudentAcademicProfile> findByAdmissionDate(Date admissionDate);
     
     List<StudentAcademicProfile> findByParentEmail(String parentEmail);

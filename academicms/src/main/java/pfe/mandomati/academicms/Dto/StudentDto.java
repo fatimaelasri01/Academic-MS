@@ -13,9 +13,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class StudentDto {
+public class StudentDto extends IamDto{
     // Données académiques spécifiques
-    private Long studentId; // Même ID que dans IAM-MS
+    //private Long studentId; // Même ID que dans IAM-MS
     private String cne;
     private Long classId;
     private Date admissionDate; 
@@ -24,7 +24,7 @@ public class StudentDto {
     private Long parentId;
     private String parentName;
     private String parentContact;
-    private String parentemail;
+    private String parentEmail;
     private List<AttendanceDto> attendanceRecords;
     private List<ResultDto> results;
     
