@@ -26,8 +26,10 @@ public class Subject {
 
     @Column(nullable = false)
     private String description;
+
+    private String gradeLevel;
     
-    private int coefficient;
+    private Integer coefficient;
     
     @ManyToOne
     @JoinColumn(name = "class_id")

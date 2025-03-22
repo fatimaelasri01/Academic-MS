@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import pfe.mandomati.academicms.Dto.ClassDto;
 import pfe.mandomati.academicms.Exception.ClassCreationException;
+import pfe.mandomati.academicms.Exception.ClassAlreadyExistsException;
 import pfe.mandomati.academicms.Model.Class;
 import pfe.mandomati.academicms.Repository.ClassRepository;
 import pfe.mandomati.academicms.Service.ClassService;
@@ -22,6 +23,10 @@ public class ClassServiceImpl implements ClassService {
     @Override
     @Transactional
     public ClassDto addClass(ClassDto classDto) {
+        if (classRepository.findByName(classDto.getName()).isPresent()) {
+            throw new ClassAlreadyExistsException("Class with name " + classDto.getName() + " already exists");
+        }
+
         try {
             Class newClass = Class.builder()
                     .name(classDto.getName())
@@ -34,15 +39,7 @@ public class ClassServiceImpl implements ClassService {
 
             newClass = classRepository.save(newClass);
 
-            return new ClassDto(
-                newClass.getId(),
-                newClass.getName(),
-                newClass.getAcademicYear(),
-                newClass.getGradeLevel(),
-                newClass.getCapacity(),
-                newClass.getCreatedAt(),
-                newClass.getUpdatedAt()
-            );
+            return classToDto(newClass);
         } catch (Exception e) {
             throw new ClassCreationException("Failed to create class", e);
         }
@@ -54,6 +51,10 @@ public class ClassServiceImpl implements ClassService {
         Class existingClass = classRepository.findById(id)
                 .orElseThrow(() -> new ClassCreationException("Class not found"));
 
+        if (!existingClass.getName().equals(classDto.getName()) && classRepository.findByName(classDto.getName()).isPresent()) {
+            throw new ClassAlreadyExistsException("Class with name " + classDto.getName() + " already exists");
+        }
+
         existingClass.setName(classDto.getName());
         existingClass.setAcademicYear(classDto.getAcademicYear());
         existingClass.setGradeLevel(classDto.getGradeLevel());
@@ -63,15 +64,7 @@ public class ClassServiceImpl implements ClassService {
 
         existingClass = classRepository.save(existingClass);
 
-        return new ClassDto(
-                existingClass.getId(),
-                existingClass.getName(),
-                existingClass.getAcademicYear(),
-                existingClass.getGradeLevel(),
-                existingClass.getCapacity(),
-                existingClass.getCreatedAt(),
-                existingClass.getUpdatedAt()
-        );
+        return classToDto(existingClass);
     }
 
     @Override
@@ -83,15 +76,7 @@ public class ClassServiceImpl implements ClassService {
     @Override
     public List<ClassDto> getAllClasses() {
         return classRepository.findAll().stream()
-                .map(c -> new ClassDto(
-                        c.getId(),
-                        c.getName(),
-                        c.getAcademicYear(),
-                        c.getGradeLevel(),
-                        c.getCapacity(),
-                        c.getCreatedAt(),
-                        c.getUpdatedAt()
-                ))
+                .map(this::classToDto)
                 .collect(Collectors.toList());
     }
 
@@ -99,21 +84,17 @@ public class ClassServiceImpl implements ClassService {
     public ClassDto getClassById(Long id) {
         Class c = classRepository.findById(id)
                 .orElseThrow(() -> new ClassCreationException("Class not found"));
-        return new ClassDto(
-                c.getId(),
-                c.getName(),
-                c.getAcademicYear(),
-                c.getGradeLevel(),
-                c.getCapacity(),
-                c.getCreatedAt(),
-                c.getUpdatedAt()
-        );
+        return classToDto(c);
     }
 
     @Override
     public ClassDto getClassByName(String name) {
         Class c = classRepository.findByName(name)
                 .orElseThrow(() -> new ClassCreationException("Class not found"));
+        return classToDto(c);
+    }
+
+    private ClassDto classToDto(Class c) {
         return new ClassDto(
                 c.getId(),
                 c.getName(),

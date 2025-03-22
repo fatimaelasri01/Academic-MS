@@ -14,49 +14,53 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/class")
-@PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'RH')")
 public class ClassController {
 
     @Autowired
     private ClassService classService;
 
     @PostMapping("/create")
-    public ResponseEntity<ClassDto> addClass(@RequestBody ClassDto classDto) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> addClass(@RequestBody ClassDto classDto) {
         try {
             ClassDto newClass = classService.addClass(classDto);
-            return ResponseEntity.ok(newClass);
+            return ResponseEntity.ok("Class successfully created with id : " + newClass.getClassId());
         } catch (ClassCreationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ClassDto> updateClass(@PathVariable Long id, @RequestBody ClassDto classDto) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> updateClass(@PathVariable Long id, @RequestBody ClassDto classDto) {
         try {
             ClassDto updatedClass = classService.updateClass(id, classDto);
-            return ResponseEntity.ok(updatedClass);
+            return ResponseEntity.ok("Class successfully updated with id : " + updatedClass.getClassId());
         } catch (ClassCreationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteClass(@PathVariable Long id) {
         try {
             classService.deleteClass(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("class successfully deleted with ID: " + id);
         } catch (ClassCreationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     public ResponseEntity<List<ClassDto>> getAllClasses() {
         List<ClassDto> classes = classService.getAllClasses();
         return ResponseEntity.ok(classes);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     public ResponseEntity<ClassDto> getClassById(@PathVariable Long id) {
         try {
             ClassDto classDto = classService.getClassById(id);
@@ -67,6 +71,7 @@ public class ClassController {
     }
 
     @GetMapping("/name/{name}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     public ResponseEntity<ClassDto> getClassByName(@PathVariable String name) {
         try {
             ClassDto classDto = classService.getClassByName(name);

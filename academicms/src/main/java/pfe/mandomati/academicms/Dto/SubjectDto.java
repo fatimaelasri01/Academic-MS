@@ -11,7 +11,6 @@ public class SubjectDto {
     private Long subjectId;
     private String name;
     private String description;
-    private int coefficient;
-    private String subjectCode;
-    private Long classId;
+    private String gradeLevel;
+    private Integer coefficient;
 }

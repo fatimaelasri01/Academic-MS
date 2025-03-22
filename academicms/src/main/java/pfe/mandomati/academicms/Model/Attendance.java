@@ -27,10 +27,6 @@ public class Attendance {
     @Column(nullable = false)
     private String status;
     
-    private String level;
-    
-    private int commentCode;
-    
     private String justificationType;
     
     private String justificationDoc;

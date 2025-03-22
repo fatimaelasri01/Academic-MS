@@ -244,7 +244,11 @@ public class StudentServiceImpl implements StudentService {
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             Long parentId = existingStudentProfile.getParentId();
-            String studentUsername = existingStudentProfile.getParentEmail();
+            ResponseEntity<IamDto> iamStudent = iamClient.getStudentById(id.toString());
+            if (!iamStudent.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Failed to retrieve student from IAMMS");
+            }
+            String studentUsername = iamStudent.getBody().getUsername();
             studentAcademicProfileRepository.deleteById(id);
 
             // Supprimer l'étudiant de IAMMS
@@ -313,8 +317,17 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentDto getStudentByStudentId(Long id) {
         try {
+
+            logger.info("Getting student by id: {}", id);
+
             ResponseEntity<IamDto> responseEntity = iamClient.getStudentById(id.toString());
+
+            logger.info("Response entity: {}", responseEntity);
+
             IamDto iamStudent = responseEntity.getBody();
+
+            logger.info("Retrieved student from IAMMS: {}", iamStudent);
+
             if (iamStudent == null) {
                 throw new RuntimeException("Failed to retrieve student from IAMMS for id: " + id);
             }
@@ -330,6 +343,12 @@ public class StudentServiceImpl implements StudentService {
                     .email(iamStudent.getEmail())
                     .city(iamStudent.getCity())
                     .assurance(profile.isAssurance())
+                    .parentName(profile.getParentName())
+                    .parentContact(profile.getParentContact())
+                    .parentEmail(profile.getParentEmail())
+                    .classId(profile.getClassId())
+                    .admissionDate(profile.getAdmissionDate())
+                    .academicStatus(profile.getAcademicStatus())
                     .build();
         } catch (Exception e) {
             logger.error("Failed to get student by id", e);

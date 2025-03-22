@@ -28,10 +28,24 @@ public class StudentController {
     private StudentService studentService;
 
     // create student
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("create")
     public ResponseEntity<String> createStudent(@RequestBody UserDto userDto) {
         return studentService.registerUser(userDto);
+    }
+
+    // update student
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("update/{id}")
+    public ResponseEntity<String> updateStudent(@PathVariable Long id, @RequestBody UserDto userDto) {
+        return studentService.updateStudent(id, userDto);
+    }
+
+    // delete student
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<String> deleteStudent(@PathVariable Long id) {
+        return studentService.deleteStudent(id);
     }
 
     // get all students
@@ -44,22 +58,8 @@ public class StudentController {
     // get student by id
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @GetMapping("/{id}")
-    public StudentDto getStudentById(Long id) {
+    public StudentDto getStudentById(@PathVariable Long id) {
         return studentService.getStudentByStudentId(id);
-    }
-
-    // update student
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
-    @PutMapping("update/{id}")
-    public ResponseEntity<String> updateStudent(@PathVariable Long id, @RequestBody UserDto userDto) {
-        return studentService.updateStudent(id, userDto);
-    }
-
-    // delete student
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> deleteStudent(@PathVariable Long id) {
-        return studentService.deleteStudent(id);
     }
 
 
