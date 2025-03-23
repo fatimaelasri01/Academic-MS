@@ -26,6 +26,8 @@ public class Class {
     @Column(nullable = false, unique = true)
     private String name;
 
+    private Integer numero;
+
     @Column(nullable = false)
     private String academicYear;
     
@@ -41,7 +43,11 @@ public class Class {
     @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
     private Set<TeacherAssignment> teacherAssignments = new HashSet<>();
     
-    @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+        name = "class_subject",
+        joinColumns = @JoinColumn(name = "class_id"),
+        inverseJoinColumns = @JoinColumn(name = "subject_id")
+    )
     private Set<Subject> subjects = new HashSet<>();
-
 }

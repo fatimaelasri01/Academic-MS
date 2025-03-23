@@ -31,14 +31,12 @@ public class Subject {
     
     private Integer coefficient;
     
-    @ManyToOne
-    @JoinColumn(name = "class_id")
-    private Class schoolClass;
+    @ManyToMany(mappedBy = "subjects")
+    private Set<Class> schoolClasses = new HashSet<>();
 
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
     private Set<Lesson> lessons = new HashSet<>();
     
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
     private Set<Evaluation> evaluations = new HashSet<>();
-
 }

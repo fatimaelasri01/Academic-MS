@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,8 @@ public class AttendanceController {
     @Autowired
     private AttendanceService attendanceService;
 
+    private static final Logger logger = Logger.getLogger(AttendanceController.class.getName());
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createAttendance(@RequestBody AttendanceDto attendanceDto) {
@@ -31,10 +34,10 @@ public class AttendanceController {
         return ResponseEntity.ok("Attendance successfully created with ID: " + createdAttendance.getId());
     }
 
-    @PutMapping("/update")
+    @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> updateAttendance(@RequestBody AttendanceDto attendanceDto) {
-        AttendanceDto updatedAttendance = attendanceService.updateAttendance(attendanceDto.getId(), attendanceDto);
+    public ResponseEntity<String> updateAttendance(@PathVariable Long id ,@RequestBody AttendanceDto attendanceDto) {
+        AttendanceDto updatedAttendance = attendanceService.updateAttendance(id, attendanceDto);
         return ResponseEntity.ok("Attendance successfully updated with ID: " + updatedAttendance.getId());
     }
 
@@ -57,9 +60,10 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.getAttendanceById(id));
     }
 
-    @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'TEACHER', , 'STUDENT', , 'PARENT')")
-    public ResponseEntity<List<AttendanceDto>> getAttendanceByStudentId(@PathVariable Long studentId) {
-        return ResponseEntity.ok(attendanceService.getAttendancesByStudentId(studentId));
+    @GetMapping("/student/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT', 'TEACHER', 'STUDENT', 'PARENT')")
+    public ResponseEntity<List<AttendanceDto>> getAttendanceByStudentId(@PathVariable Long id) {
+        logger.info("Student ID: " + id);
+        return ResponseEntity.ok(attendanceService.getAttendancesByStudentId(id));
     }   
 }

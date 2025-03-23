@@ -12,7 +12,6 @@ public class TeacherAssignmentDto {
     private Long teacherId;
     private String academicYear;
     private int hoursPerWeek;
-    private String comments;
     private Long classId;
     private Long subjectId; 
 }

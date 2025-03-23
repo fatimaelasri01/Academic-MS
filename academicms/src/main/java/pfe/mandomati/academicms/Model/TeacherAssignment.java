@@ -1,6 +1,5 @@
 package pfe.mandomati.academicms.Model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

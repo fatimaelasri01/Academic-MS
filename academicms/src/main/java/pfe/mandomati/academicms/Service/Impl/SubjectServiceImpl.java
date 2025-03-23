@@ -4,9 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pfe.mandomati.academicms.Dto.SubjectDto;
 import pfe.mandomati.academicms.Model.Subject;
+import pfe.mandomati.academicms.Repository.ClassRepository;
 import pfe.mandomati.academicms.Repository.SubjectRepository;
 import pfe.mandomati.academicms.Service.SubjectService;
 import pfe.mandomati.academicms.Exception.ResourceNotFoundException;
+
+import org.springframework.transaction.annotation.Transactional;
+import pfe.mandomati.academicms.Model.Class;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +21,9 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Autowired
     private SubjectRepository subjectRepository;
+
+    @Autowired
+    private ClassRepository classRepository;
 
     @Override
     public SubjectDto createSubject(SubjectDto subjectDto) {
@@ -63,6 +71,28 @@ public class SubjectServiceImpl implements SubjectService {
         return subjectToDto(subject);
     }
 
+    @Transactional
+    public void assignSubjectToClass(Long subjectId, Long classId) {
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid subject ID"));
+        Class schoolClass = classRepository.findById(classId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid class ID"));
+
+        schoolClass.getSubjects().add(subject);
+        classRepository.save(schoolClass); // Sauvegarde de la classe mise à jour
+    }
+
+    @Transactional
+    public void removeSubjectFromClass(Long subjectId, Long classId) {
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid subject ID"));
+        Class schoolClass = classRepository.findById(classId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid class ID"));
+
+        schoolClass.getSubjects().remove(subject);
+        classRepository.save(schoolClass); // Sauvegarde de la classe mise à jour
+    }
+
     public SubjectDto subjectToDto(Subject subject) {
         return new SubjectDto(
                 subject.getSubjectId(),
@@ -75,6 +105,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     public Subject dtoToSubject(SubjectDto subjectDto) {
         Subject subject = new Subject();
+        subject.setSubjectId(subjectDto.getSubjectId());
         subject.setName(subjectDto.getName());
         subject.setDescription(subjectDto.getDescription());
         subject.setGradeLevel(subjectDto.getGradeLevel());

@@ -9,4 +9,6 @@ public interface SubjectService {
     void deleteSubject(Long subjectId);
     List<SubjectDto> getAllSubjects();
     SubjectDto getSubjectById(Long subjectId);
+    void assignSubjectToClass(Long subjectId, Long classId);
+    void removeSubjectFromClass(Long subjectId, Long classId);
 }

@@ -12,6 +12,7 @@ import java.util.Date;
 public class ClassDto {
     private Long classId;
     private String name;
+    private Integer numero;
     private String academicYear;
     private String gradeLevel;
     private Integer capacity;

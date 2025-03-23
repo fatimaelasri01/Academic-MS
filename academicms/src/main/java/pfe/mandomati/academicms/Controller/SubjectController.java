@@ -48,4 +48,16 @@ public class SubjectController {
     public ResponseEntity<SubjectDto> getSubjectById(@PathVariable Long id) {
         return ResponseEntity.ok(subjectService.getSubjectById(id));
     }
+
+    @PostMapping("/{subjectId}/assign/{classId}")
+    public ResponseEntity<Void> assignSubjectToClass(@PathVariable Long subjectId, @PathVariable Long classId) {
+        subjectService.assignSubjectToClass(subjectId, classId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{subjectId}/remove/{classId}")
+    public ResponseEntity<Void> removeSubjectFromClass(@PathVariable Long subjectId, @PathVariable Long classId) {
+        subjectService.removeSubjectFromClass(subjectId, classId);
+        return ResponseEntity.ok().build();
+    }
 }
