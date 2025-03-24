@@ -1,12 +1,12 @@
 package pfe.mandomati.academicms.Service;
 
-import pfe.mandomati.academicms.Model.ClassSchedule;
+import pfe.mandomati.academicms.Dto.ClassScheduleDto;
 import java.util.List;
 
 public interface ClassScheduleService {
-    ClassSchedule saveClassSchedule(ClassSchedule classSchedule);
-    List<ClassSchedule> getAllClassSchedules();
-    ClassSchedule getClassScheduleById(Long id);
-    ClassSchedule updateClassSchedule(ClassSchedule classSchedule);
+    ClassScheduleDto createClassSchedule(ClassScheduleDto classScheduleDto);
+    ClassScheduleDto updateClassSchedule(Long id, ClassScheduleDto classScheduleDto);
     void deleteClassSchedule(Long id);
+    List<ClassScheduleDto> getAllClassSchedules();
+    ClassScheduleDto getClassScheduleById(Long id);
 }

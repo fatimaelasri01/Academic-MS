@@ -41,5 +41,8 @@ public class Class {
     private Date updatedAt;
 
     @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
+    private Set<Student> studentAcademicProfiles = new HashSet<>();
+
+    @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
     private Set<TeacherAssignment> teacherAssignments = new HashSet<>();
 }

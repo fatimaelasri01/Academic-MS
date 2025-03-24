@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 import java.util.Date;
 
 @Entity
@@ -14,7 +15,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentAcademicProfile {
+public class Student{
     @Id
     @Column(name = "student_id")
     private Long studentId; // Même ID que dans IAM-MS
@@ -22,8 +23,9 @@ public class StudentAcademicProfile {
     @Column(nullable = false, unique = true)
     private String cne;
 
-    @Column(nullable = false)
-    private Long classId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id", nullable = false)
+    private Class schoolClass;
 
     private Date admissionDate; 
     private String academicStatus;

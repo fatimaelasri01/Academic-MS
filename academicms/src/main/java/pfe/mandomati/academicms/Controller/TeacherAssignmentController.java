@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import pfe.mandomati.academicms.Dto.TeacherAssignmentDto;
 import pfe.mandomati.academicms.Exception.ResourceNotFoundException;
 import pfe.mandomati.academicms.Service.TeacherAssignmentService;
+import pfe.mandomati.academicms.Dto.TeacherDto;
 
 import java.util.List;
 
@@ -68,5 +69,12 @@ public class TeacherAssignmentController {
         } catch (RuntimeException e) {
             return new ResponseEntity<>("Failed to delete teacher assignment: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/teachers")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+    public ResponseEntity<String> getAllTeachersRh() {
+        List<TeacherDto> teachers = teacherAssignmentService.getAllTeachersRh();
+        return new ResponseEntity<>(teachers.toString(), HttpStatus.OK);
     }
 }

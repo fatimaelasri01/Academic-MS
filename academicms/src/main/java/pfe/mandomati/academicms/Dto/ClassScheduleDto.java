@@ -16,7 +16,5 @@ public class ClassScheduleDto {
     private LocalTime startTime;
     private LocalTime endTime;
     private String roomNumber;
-    private String notes;
-    private Long subjectId;
-    private Long teacherId;
+    private Long teacherAssignementId;
 }

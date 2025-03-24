@@ -18,11 +18,12 @@ import pfe.mandomati.academicms.Client.IamClient;
 import pfe.mandomati.academicms.Dto.IamDto;
 import pfe.mandomati.academicms.Dto.StudentDto;
 import pfe.mandomati.academicms.Dto.UserDto;
-import pfe.mandomati.academicms.Model.StudentAcademicProfile;
+import pfe.mandomati.academicms.Model.Student;
 import pfe.mandomati.academicms.Repository.ClassRepository;
-import pfe.mandomati.academicms.Repository.StudentAcademicProfileRepository;
-import pfe.mandomati.academicms.Service.StudentService;
 
+import pfe.mandomati.academicms.Repository.StudentRepository;
+import pfe.mandomati.academicms.Service.StudentService;
+import pfe.mandomati.academicms.Model.Class;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ public class StudentServiceImpl implements StudentService {
     private IamClient iamClient;
 
     @Autowired
-    private StudentAcademicProfileRepository studentAcademicProfileRepository;
+    private StudentRepository studentAcademicProfileRepository;
 
     @Autowired
     private ClassRepository classRepository;
@@ -80,7 +81,7 @@ public class StudentServiceImpl implements StudentService {
             logger.info("studentId: {}", studentId);
 
             // Vérifier si le parent existe déjà dans la base de données
-            List<StudentAcademicProfile> existingParentProfiles = studentAcademicProfileRepository.findByParentEmail(userDTO.getParentEmail());
+            List<Student> existingParentProfiles = studentAcademicProfileRepository.findByParentEmail(userDTO.getParentEmail());
             if (existingParentProfiles.isEmpty()) {
                 // Ajouter le parent dans IAMMS
                 IamDto.Role parentRole = IamDto.Role.builder()
@@ -118,15 +119,18 @@ public class StudentServiceImpl implements StudentService {
                 logger.info("parentId: {}", parentId);
             } else {
                 // Utiliser le premier profil parent trouvé
-                StudentAcademicProfile existingParentProfile = existingParentProfiles.get(0);
+                Student existingParentProfile = existingParentProfiles.get(0);
                 parentId = existingParentProfile.getParentId();
                 logger.info("Parent already exists in academicms: {}", existingParentProfile);
             }
 
-            StudentAcademicProfile studentProfile = StudentAcademicProfile.builder()
+            Class classProfile = classRepository.findById(userDTO.getClassId())
+                    .orElseThrow(() -> new RuntimeException("Class not found"));
+
+            Student studentProfile = Student.builder()
                     .cne(userDTO.getCne())
                     .studentId(studentId)
-                    .classId(classRepository.findIdByName(userDTO.getClassName()))
+                    .schoolClass(classProfile)
                     .admissionDate(userDTO.getAdmissionDate())
                     .academicStatus(userDTO.getAcademicStatus())
                     .parentId(parentId)
@@ -170,7 +174,7 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public ResponseEntity<String> updateStudent(Long id, UserDto userDto) {
         try {
-            StudentAcademicProfile existingStudentProfile = studentAcademicProfileRepository.findById(id)
+            Student existingStudentProfile = studentAcademicProfileRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             // Mettre à jour les informations de l'étudiant dans IAMMS
@@ -190,9 +194,12 @@ public class StudentServiceImpl implements StudentService {
 
             iamClient.editUser(URLEncoder.encode(userDto.getUsername(), StandardCharsets.UTF_8.toString()), iamStudentDto);
 
+            Class classProfile = classRepository.findById(userDto.getClassId())
+                    .orElseThrow(() -> new RuntimeException("Class not found"));
+
             // Mettre à jour les informations de l'étudiant dans Academic-MS
             existingStudentProfile.setCne(userDto.getCne());
-            existingStudentProfile.setClassId(classRepository.findIdByName(userDto.getClassName()));
+            existingStudentProfile.setSchoolClass(classProfile);
             existingStudentProfile.setAdmissionDate(userDto.getAdmissionDate());
             existingStudentProfile.setAcademicStatus(userDto.getAcademicStatus());
             existingStudentProfile.setAssurance(userDto.isAssurance());
@@ -221,8 +228,8 @@ public class StudentServiceImpl implements StudentService {
             iamClient.editUser(URLEncoder.encode(userDto.getParentUsername(), StandardCharsets.UTF_8.toString()), iamParentDto);
 
             // Mettre à jour les informations du parent pour tous les étudiants liés
-            List<StudentAcademicProfile> parentProfiles = studentAcademicProfileRepository.findByParentId(existingStudentProfile.getParentId());
-            for (StudentAcademicProfile profile : parentProfiles) {
+            List<Student> parentProfiles = studentAcademicProfileRepository.findByParentId(existingStudentProfile.getParentId());
+            for (Student profile : parentProfiles) {
                 profile.setParentName(userDto.getParentFirstname() + " " + userDto.getParentLastname());
                 profile.setParentContact(userDto.getParentContact());
                 profile.setParentEmail(userDto.getParentEmail());
@@ -240,7 +247,7 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public ResponseEntity<String> deleteStudent(Long id) {
         try {
-            StudentAcademicProfile existingStudentProfile = studentAcademicProfileRepository.findById(id)
+            Student existingStudentProfile = studentAcademicProfileRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             Long parentId = existingStudentProfile.getParentId();
@@ -256,7 +263,7 @@ public class StudentServiceImpl implements StudentService {
             logger.info("Deleted student from IAMMS: {}", studentUsername);
 
             // Vérifier si le parent est lié à d'autres étudiants
-            List<StudentAcademicProfile> remainingProfiles = studentAcademicProfileRepository.findByParentId(parentId);
+            List<Student> remainingProfiles = studentAcademicProfileRepository.findByParentId(parentId);
             if (remainingProfiles.isEmpty()) {
                 // Supprimer le parent de IAMMS
                 iamClient.deleteUser(URLEncoder.encode(existingStudentProfile.getParentEmail(), StandardCharsets.UTF_8.toString()));
@@ -294,8 +301,8 @@ public class StudentServiceImpl implements StudentService {
                     logger.error("Student ID is null for IAM student: {}", iamStudent);
                     throw new RuntimeException("Student ID is null for IAM student");
                 }
-                Optional<StudentAcademicProfile> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
-                StudentAcademicProfile profile = profileOptional.orElseThrow(() -> 
+                Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
+                Student profile = profileOptional.orElseThrow(() -> 
                     new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
                 return StudentDto.builder()
                         .id(iamStudent.getId())
@@ -331,8 +338,8 @@ public class StudentServiceImpl implements StudentService {
             if (iamStudent == null) {
                 throw new RuntimeException("Failed to retrieve student from IAMMS for id: " + id);
             }
-            Optional<StudentAcademicProfile> profileOptional = studentAcademicProfileRepository.findById(id);
-            StudentAcademicProfile profile = profileOptional.orElseThrow(() -> 
+            Optional<Student> profileOptional = studentAcademicProfileRepository.findById(id);
+            Student profile = profileOptional.orElseThrow(() -> 
                 new RuntimeException("Student profile not found for studentId: " + id));
             return StudentDto.builder()
                     .id(iamStudent.getId())
@@ -346,7 +353,7 @@ public class StudentServiceImpl implements StudentService {
                     .parentName(profile.getParentName())
                     .parentContact(profile.getParentContact())
                     .parentEmail(profile.getParentEmail())
-                    .classId(profile.getClassId())
+                    .classId(profile.getSchoolClass().getId())
                     .admissionDate(profile.getAdmissionDate())
                     .academicStatus(profile.getAcademicStatus())
                     .build();
@@ -354,18 +361,6 @@ public class StudentServiceImpl implements StudentService {
             logger.error("Failed to get student by id", e);
             throw new RuntimeException("Failed to get student by id", e);
         }
-    }
-
-    @Override
-    public StudentDto createOrUpdateStudentProfile(StudentDto studentDto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createOrUpdateStudentProfile'");
-    }
-
-    @Override
-    public void deleteStudentProfile(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteStudentProfile'");
     }
 
     @Override

@@ -1,9 +1,11 @@
 package pfe.mandomati.academicms.Dto;
 
-import java.time.LocalDate;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
+import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -16,5 +18,5 @@ public class AttendanceDto {
     private String justificationType;
     private String justificationDoc;
     private String validatorName;
-    private Long subjectId;
+    private Long classScheduleId;
 }

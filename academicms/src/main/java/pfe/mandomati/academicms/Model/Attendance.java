@@ -1,6 +1,5 @@
 package pfe.mandomati.academicms.Model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,10 +33,10 @@ public class Attendance {
     private String validatorName;
     
     @ManyToOne
-    @JoinColumn(name = "subject_id")
-    private Subject subject;
+    @JoinColumn(name = "class_schedule_id")
+    private ClassSchedule classSchedule;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private StudentAcademicProfile studentProfile;
+    private Student studentProfile;
 }

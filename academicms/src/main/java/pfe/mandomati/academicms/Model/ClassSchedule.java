@@ -33,10 +33,6 @@ public class ClassSchedule {
     private String roomNumber;
     
     @ManyToOne
-    @JoinColumn(name = "subject_id")
-    private Subject subject;
-    
-    @ManyToOne
     @JoinColumn(name = "teacher_id")
     private TeacherAssignment teacher;
 }

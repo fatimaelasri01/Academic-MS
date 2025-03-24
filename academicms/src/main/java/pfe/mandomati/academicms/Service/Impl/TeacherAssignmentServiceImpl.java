@@ -37,7 +37,7 @@ public class TeacherAssignmentServiceImpl implements TeacherAssignmentService {
     public TeacherAssignmentDto saveTeacherAssignment(TeacherAssignmentDto teacherAssignmentDto) {
         try {
             // Vérifier si l'enseignant existe
-            ResponseEntity<TeacherDto> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId());
+            ResponseEntity<?> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId());
             if (!teacherResponse.getStatusCode().is2xxSuccessful()) {
                 throw new ResourceNotFoundException("Teacher not found with id " + teacherAssignmentDto.getTeacherId());
             }
@@ -85,7 +85,7 @@ public class TeacherAssignmentServiceImpl implements TeacherAssignmentService {
                     .orElseThrow(() -> new ResourceNotFoundException("TeacherAssignment not found with id " + id));
 
             // Vérifier si l'enseignant existe
-            ResponseEntity<TeacherDto> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId());
+            ResponseEntity<?> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId());
             if (!teacherResponse.getStatusCode().is2xxSuccessful()) {
                 throw new ResourceNotFoundException("Teacher not found with id " + teacherAssignmentDto.getTeacherId());
             }
@@ -118,6 +118,15 @@ public class TeacherAssignmentServiceImpl implements TeacherAssignmentService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete teacher assignment: " + e.getMessage());
         }
+    }
+
+    @Override
+    public List<TeacherDto> getAllTeachersRh() {
+        List<TeacherDto> teachersResponse = rhClient.getAllTeachersDs();
+        if (teachersResponse == null) {
+            throw new ResourceNotFoundException("Failed to fetch teachers from RHMS");
+        }
+        return teachersResponse;   
     }
 
     private TeacherAssignmentDto entityToDto(TeacherAssignment teacherAssignment) {

@@ -13,7 +13,7 @@ import pfe.mandomati.academicms.Dto.TeacherDto;
 public interface RhClient {
 
     @GetMapping("/api/teacher/{id}")
-    public ResponseEntity<TeacherDto> getTeacherById(@PathVariable Long id);
+    public ResponseEntity<?> getTeacherById(@PathVariable Long id);
 
     @GetMapping("/api/teacher/speciality/{speciality}")
     public ResponseEntity<?> getTeachersBySpeciality(@PathVariable String speciality);

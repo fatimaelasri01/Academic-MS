@@ -36,5 +36,5 @@ public class Result {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private StudentAcademicProfile studentProfile;
+    private Student studentProfile;
 }

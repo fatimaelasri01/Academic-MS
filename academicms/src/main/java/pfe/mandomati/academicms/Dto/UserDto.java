@@ -37,7 +37,7 @@ public class UserDto {
 
     private String cne;
 
-    private String className;
+    private Long classId;
 
     private Date admissionDate;
 
