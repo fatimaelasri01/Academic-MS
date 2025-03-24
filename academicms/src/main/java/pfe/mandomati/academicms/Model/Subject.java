@@ -31,8 +31,9 @@ public class Subject {
     
     private Integer coefficient;
     
-    @ManyToMany(mappedBy = "subjects")
-    private Set<Class> schoolClasses = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "filiere_id", nullable = false)
+    private Filiere filiere;
 
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
     private Set<Lesson> lessons = new HashSet<>();

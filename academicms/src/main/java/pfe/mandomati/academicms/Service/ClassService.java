@@ -11,6 +11,6 @@ public interface ClassService {
     void deleteClass(Long id);
     List<ClassDto> getAllClasses();
     ClassDto getClassById(Long id);
-    ClassDto getClassByName(String name);
+    List<ClassDto> getClassesByFiliere(String filiereName);
   
 }

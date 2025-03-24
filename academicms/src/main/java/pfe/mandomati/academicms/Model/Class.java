@@ -2,7 +2,6 @@ package pfe.mandomati.academicms.Model;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import java.util.Date;
 
 import jakarta.persistence.*;
@@ -21,10 +20,11 @@ public class Class {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "class_id")
-    private Long Id;
+    private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "filiere_id", nullable = false)
+    private Filiere filiere;
 
     private Integer numero;
 
@@ -42,12 +42,4 @@ public class Class {
 
     @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
     private Set<TeacherAssignment> teacherAssignments = new HashSet<>();
-    
-    @ManyToMany
-    @JoinTable(
-        name = "class_subject",
-        joinColumns = @JoinColumn(name = "class_id"),
-        inverseJoinColumns = @JoinColumn(name = "subject_id")
-    )
-    private Set<Subject> subjects = new HashSet<>();
 }

@@ -8,7 +8,9 @@ import pfe.mandomati.academicms.Dto.ClassDto;
 import pfe.mandomati.academicms.Exception.ClassCreationException;
 import pfe.mandomati.academicms.Exception.ClassAlreadyExistsException;
 import pfe.mandomati.academicms.Model.Class;
+import pfe.mandomati.academicms.Model.Filiere;
 import pfe.mandomati.academicms.Repository.ClassRepository;
+import pfe.mandomati.academicms.Repository.FiliereRepository;
 import pfe.mandomati.academicms.Service.ClassService;
 
 import java.util.List;
@@ -20,17 +22,25 @@ public class ClassServiceImpl implements ClassService {
     @Autowired
     private ClassRepository classRepository;
 
+    @Autowired
+    private FiliereRepository filiereRepository;
+
     @Override
     @Transactional
     public ClassDto addClass(ClassDto classDto) {
-        if (classRepository.findByName(classDto.getName()).isPresent()) {
-            throw new ClassAlreadyExistsException("Class with name " + classDto.getName() + " already exists");
+        Filiere filiere = filiereRepository.findByName(classDto.getFiliereName())
+                .orElseThrow(() -> new ClassCreationException("Filiere not found"));
+
+        // Vérifier si le numéro de la classe est unique
+        if (classRepository.existsByNumero(classDto.getNumero())) {
+            throw new ClassAlreadyExistsException("Class with this number already exists");
         }
 
         try {
             Class newClass = Class.builder()
-                    .name(classDto.getName())
+                    .filiere(filiere)
                     .academicYear(classDto.getAcademicYear())
+                    .numero(classDto.getNumero())
                     .gradeLevel(classDto.getGradeLevel())
                     .capacity(classDto.getCapacity())
                     .createdAt(classDto.getCreatedAt())
@@ -51,12 +61,17 @@ public class ClassServiceImpl implements ClassService {
         Class existingClass = classRepository.findById(id)
                 .orElseThrow(() -> new ClassCreationException("Class not found"));
 
-        if (!existingClass.getName().equals(classDto.getName()) && classRepository.findByName(classDto.getName()).isPresent()) {
-            throw new ClassAlreadyExistsException("Class with name " + classDto.getName() + " already exists");
+        Filiere filiere = filiereRepository.findByName(classDto.getFiliereName())
+                .orElseThrow(() -> new ClassCreationException("Filiere not found"));
+
+        // Vérifier si le numéro de la classe est unique
+        if (!existingClass.getNumero().equals(classDto.getNumero()) && classRepository.existsByNumero(classDto.getNumero())) {
+            throw new ClassAlreadyExistsException("Class with this number already exists");
         }
 
-        existingClass.setName(classDto.getName());
+        existingClass.setFiliere(filiere);
         existingClass.setAcademicYear(classDto.getAcademicYear());
+        existingClass.setNumero(classDto.getNumero());
         existingClass.setGradeLevel(classDto.getGradeLevel());
         existingClass.setCapacity(classDto.getCapacity());
         existingClass.setCreatedAt(classDto.getCreatedAt());
@@ -88,16 +103,19 @@ public class ClassServiceImpl implements ClassService {
     }
 
     @Override
-    public ClassDto getClassByName(String name) {
-        Class c = classRepository.findByName(name)
-                .orElseThrow(() -> new ClassCreationException("Class not found"));
-        return classToDto(c);
+    public List<ClassDto> getClassesByFiliere(String filiereName) {
+        Filiere filiere = filiereRepository.findByName(filiereName)
+                .orElseThrow(() -> new ClassCreationException("Filiere not found"));
+        return classRepository.findByFiliere(filiere).stream()
+                .map(this::classToDto)
+                .collect(Collectors.toList());
     }
 
     private ClassDto classToDto(Class c) {
         return new ClassDto(
                 c.getId(),
-                c.getName(),
+                c.getFiliere().getName(),
+                c.getNumero(),
                 c.getAcademicYear(),
                 c.getGradeLevel(),
                 c.getCapacity(),

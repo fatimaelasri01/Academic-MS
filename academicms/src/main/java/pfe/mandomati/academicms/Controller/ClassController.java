@@ -7,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import pfe.mandomati.academicms.Dto.ClassDto;
-import pfe.mandomati.academicms.Exception.ClassCreationException;
 import pfe.mandomati.academicms.Service.ClassService;
 
 import java.util.List;
@@ -21,63 +20,43 @@ public class ClassController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> addClass(@RequestBody ClassDto classDto) {
-        try {
-            ClassDto newClass = classService.addClass(classDto);
-            return ResponseEntity.ok("Class successfully created with id : " + newClass.getClassId());
-        } catch (ClassCreationException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+    public ResponseEntity<ClassDto> createClass(@RequestBody ClassDto classDto) {
+        ClassDto createdClass = classService.addClass(classDto);
+        return new ResponseEntity<>(createdClass, HttpStatus.CREATED);
     }
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> updateClass(@PathVariable Long id, @RequestBody ClassDto classDto) {
-        try {
-            ClassDto updatedClass = classService.updateClass(id, classDto);
-            return ResponseEntity.ok("Class successfully updated with id : " + updatedClass.getClassId());
-        } catch (ClassCreationException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+    public ResponseEntity<ClassDto> updateClass(@PathVariable Long id, @RequestBody ClassDto classDto) {
+        ClassDto updatedClass = classService.updateClass(id, classDto);
+        return new ResponseEntity<>(updatedClass, HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleteClass(@PathVariable Long id) {
-        try {
-            classService.deleteClass(id);
-            return ResponseEntity.ok("class successfully deleted with ID: " + id);
-        } catch (ClassCreationException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
+        classService.deleteClass(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/all")
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     public ResponseEntity<List<ClassDto>> getAllClasses() {
         List<ClassDto> classes = classService.getAllClasses();
-        return ResponseEntity.ok(classes);
+        return new ResponseEntity<>(classes, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     public ResponseEntity<ClassDto> getClassById(@PathVariable Long id) {
-        try {
-            ClassDto classDto = classService.getClassById(id);
-            return ResponseEntity.ok(classDto);
-        } catch (ClassCreationException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+        ClassDto classDto = classService.getClassById(id);
+        return new ResponseEntity<>(classDto, HttpStatus.OK);
     }
 
-    @GetMapping("/name/{name}")
+    @GetMapping("/filiere/{filiereName}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
-    public ResponseEntity<ClassDto> getClassByName(@PathVariable String name) {
-        try {
-            ClassDto classDto = classService.getClassByName(name);
-            return ResponseEntity.ok(classDto);
-        } catch (ClassCreationException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+    public ResponseEntity<List<ClassDto>> getClassesByFiliere(@PathVariable String filiereName) {
+        List<ClassDto> classDtos = classService.getClassesByFiliere(filiereName);
+        return new ResponseEntity<>(classDtos, HttpStatus.OK);
     }
 }

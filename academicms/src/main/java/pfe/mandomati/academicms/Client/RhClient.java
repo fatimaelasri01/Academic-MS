@@ -12,14 +12,13 @@ import pfe.mandomati.academicms.Dto.TeacherDto;
 @FeignClient(name = "rhms", url = "https://rhms.mandomati.com")
 public interface RhClient {
 
-
-    @GetMapping("/api/teacher/all")
-    public List<TeacherDto> getAllTeachers();
-
     @GetMapping("/api/teacher/{id}")
-    public ResponseEntity<?> getTeacherById(@PathVariable Long id);
+    public ResponseEntity<TeacherDto> getTeacherById(@PathVariable Long id);
 
     @GetMapping("/api/teacher/speciality/{speciality}")
-    public ResponseEntity<?> getTeachersBySpeciality(@PathVariable String speciality);    
+    public ResponseEntity<?> getTeachersBySpeciality(@PathVariable String speciality);
+    
+    @GetMapping("/api/teacher/allteachers")
+    public List<TeacherDto> getAllTeachersDs();
     
 }

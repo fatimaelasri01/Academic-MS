@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import pfe.mandomati.academicms.Dto.SubjectDto;
 import pfe.mandomati.academicms.Service.SubjectService;
 
@@ -49,15 +50,15 @@ public class SubjectController {
         return ResponseEntity.ok(subjectService.getSubjectById(id));
     }
 
-    @PostMapping("/{subjectId}/assign/{classId}")
-    public ResponseEntity<Void> assignSubjectToClass(@PathVariable Long subjectId, @PathVariable Long classId) {
-        subjectService.assignSubjectToClass(subjectId, classId);
-        return ResponseEntity.ok().build();
+    @PostMapping("/{subjectId}/assign/{filiereId}")
+    public ResponseEntity<String> assignSubjectToFiliere(@PathVariable Long subjectId, @PathVariable Long filiereId) {
+        subjectService.assignSubjectToFiliere(subjectId, filiereId);
+        return ResponseEntity.ok("Subject successfully assigned to filiere with ID: " + filiereId);
     }
 
-    @PostMapping("/{subjectId}/remove/{classId}")
-    public ResponseEntity<Void> removeSubjectFromClass(@PathVariable Long subjectId, @PathVariable Long classId) {
-        subjectService.removeSubjectFromClass(subjectId, classId);
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/{subjectId}/remove/{filiereId}")
+    public ResponseEntity<String> removeSubjectFromFiliere(@PathVariable Long subjectId, @PathVariable Long filiereId) {
+        subjectService.removeSubjectFromFiliere(subjectId, filiereId);
+        return ResponseEntity.ok("Subject successfully removed from filiere with ID: " + filiereId);
     }
 }

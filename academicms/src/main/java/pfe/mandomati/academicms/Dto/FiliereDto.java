@@ -1,17 +1,17 @@
 package pfe.mandomati.academicms.Dto;
 
+import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubjectDto {
-    private Long subjectId;
+public class FiliereDto {
+    private Long id;
     private String name;
     private String description;
-    private String gradeLevel;
-    private Integer coefficient;
-    private String filiereName;
+    private List<SubjectDto> subjects;
 }
