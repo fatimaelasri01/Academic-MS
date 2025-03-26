@@ -42,9 +42,6 @@ public class ClassServiceImpl implements ClassService {
                     .academicYear(classDto.getAcademicYear())
                     .numero(classDto.getNumero())
                     .gradeLevel(classDto.getGradeLevel())
-                    .capacity(classDto.getCapacity())
-                    .createdAt(classDto.getCreatedAt())
-                    .updatedAt(classDto.getUpdatedAt())
                     .build();
 
             newClass = classRepository.save(newClass);
@@ -64,18 +61,16 @@ public class ClassServiceImpl implements ClassService {
         Filiere filiere = filiereRepository.findByName(classDto.getFiliereName())
                 .orElseThrow(() -> new ClassCreationException("Filiere not found"));
 
-        // Vérifier si le numéro de la classe est unique
+        /*  Vérifier si le numéro de la classe est unique
         if (!existingClass.getNumero().equals(classDto.getNumero()) && classRepository.existsByNumero(classDto.getNumero())) {
             throw new ClassAlreadyExistsException("Class with this number already exists");
-        }
+        }*/
 
         existingClass.setFiliere(filiere);
         existingClass.setAcademicYear(classDto.getAcademicYear());
         existingClass.setNumero(classDto.getNumero());
         existingClass.setGradeLevel(classDto.getGradeLevel());
         existingClass.setCapacity(classDto.getCapacity());
-        existingClass.setCreatedAt(classDto.getCreatedAt());
-        existingClass.setUpdatedAt(classDto.getUpdatedAt());
 
         existingClass = classRepository.save(existingClass);
 
@@ -112,15 +107,13 @@ public class ClassServiceImpl implements ClassService {
     }
 
     private ClassDto classToDto(Class c) {
-        return new ClassDto(
-                c.getId(),
-                c.getFiliere().getName(),
-                c.getNumero(),
-                c.getAcademicYear(),
-                c.getGradeLevel(),
-                c.getCapacity(),
-                c.getCreatedAt(),
-                c.getUpdatedAt()
-        );
+        return ClassDto.builder()
+                .classId(c.getId())
+                .filiereName(c.getFiliere().getName())
+                .numero(c.getNumero())
+                .academicYear(c.getAcademicYear())
+                .gradeLevel(c.getGradeLevel())
+                .capacity(c.getCapacity())
+                .build();
     }
 }

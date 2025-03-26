@@ -2,6 +2,10 @@ package pfe.mandomati.academicms.Model;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.util.Date;
 
 import jakarta.persistence.*;
@@ -36,8 +40,11 @@ public class Class {
     
     private Integer capacity;
 
+    @CreationTimestamp
+    @Column(updatable = false)
     private Date createdAt;
 
+    @UpdateTimestamp
     private Date updatedAt;
 
     @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
