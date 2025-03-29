@@ -15,8 +15,8 @@ public class AttendanceDto {
     private Long studentId;
     private LocalDate date;
     private String status;
+    private boolean excused;
     private String justificationType;
     private String justificationDoc;
-    private String validatorName;
     private Long classScheduleId;
 }

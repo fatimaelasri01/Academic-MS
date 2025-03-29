@@ -62,6 +62,12 @@ public class StudentController {
         return studentService.getStudentByStudentId(id);
     }
 
+    @GetMapping("/class/{classId}")
+    public ResponseEntity<List<StudentDto>> getStudentsByClassId(@PathVariable Long classId) {
+        List<StudentDto> students = studentService.getStudentsByClassId(classId);
+        return ResponseEntity.ok(students);
+    }
+
 
     @GetMapping("test")
     public String test() {

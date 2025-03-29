@@ -14,6 +14,7 @@ import pfe.mandomati.academicms.Repository.AttendanceRepository;
 import pfe.mandomati.academicms.Repository.ClassScheduleRepository;
 import pfe.mandomati.academicms.Repository.StudentRepository;
 import pfe.mandomati.academicms.Service.AttendanceService;
+import pfe.mandomati.academicms.Service.ClassScheduleService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Autowired
     private StudentRepository studentAcademicProfileRepository;
 
+    @Autowired
+    private ClassScheduleService classScheduleService;
+
     private static final Logger logger = LoggerFactory.getLogger(AttendanceServiceImpl.class);
 
     @Override
@@ -41,10 +45,10 @@ public class AttendanceServiceImpl implements AttendanceService {
 
             attendance.setDate(attendanceDto.getDate());
             attendance.setStatus(attendanceDto.getStatus());
-            attendance.setJustificationType(attendanceDto.getJustificationType());
-            attendance.setJustificationDoc(attendanceDto.getJustificationDoc());
-            attendance.setValidatorName(attendanceDto.getValidatorName());
-
+            attendance.isExcused();
+            attendance.setJustificationType(null);
+            attendance.setJustificationDoc(null);
+            
             ClassSchedule classSchedule = classScheduleRepository.findById(attendanceDto.getClassScheduleId())
                     .orElseThrow(() -> new ResourceNotFoundException("ClassSchedule not found with id " + attendanceDto.getClassScheduleId()));
 
@@ -70,9 +74,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
             attendance.setDate(attendanceDto.getDate());
             attendance.setStatus(attendanceDto.getStatus());
+            attendance.setExcused(attendanceDto.isExcused());
             attendance.setJustificationType(attendanceDto.getJustificationType());
             attendance.setJustificationDoc(attendanceDto.getJustificationDoc());
-            attendance.setValidatorName(attendanceDto.getValidatorName());
 
             ClassSchedule classSchedule = classScheduleRepository.findById(attendanceDto.getClassScheduleId())
                     .orElseThrow(() -> new ResourceNotFoundException("ClassSchedule not found with id " + attendanceDto.getClassScheduleId()));
@@ -147,9 +151,9 @@ public class AttendanceServiceImpl implements AttendanceService {
                 attendance.getStudentProfile().getStudentId(),
                 attendance.getDate(),
                 attendance.getStatus(),
+                attendance.isExcused(),
                 attendance.getJustificationType(),
                 attendance.getJustificationDoc(),
-                attendance.getValidatorName(),
                 attendance.getClassSchedule().getId()
         );
     }

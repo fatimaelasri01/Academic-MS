@@ -25,12 +25,13 @@ public class Attendance {
     
     @Column(nullable = false)
     private String status;
+
+    @Builder.Default
+    private boolean excused = false;
     
     private String justificationType;
     
     private String justificationDoc;
-    
-    private String validatorName;
     
     @ManyToOne
     @JoinColumn(name = "class_schedule_id")

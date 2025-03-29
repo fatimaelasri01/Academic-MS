@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import pfe.mandomati.academicms.Dto.ClassDto;
 import pfe.mandomati.academicms.Exception.ClassCreationException;
-import pfe.mandomati.academicms.Exception.ClassAlreadyExistsException;
 import pfe.mandomati.academicms.Model.Class;
 import pfe.mandomati.academicms.Model.Filiere;
 import pfe.mandomati.academicms.Repository.ClassRepository;
@@ -31,10 +30,10 @@ public class ClassServiceImpl implements ClassService {
         Filiere filiere = filiereRepository.findByName(classDto.getFiliereName())
                 .orElseThrow(() -> new ClassCreationException("Filiere not found"));
 
-        // Vérifier si le numéro de la classe est unique
+        /*érifier si le numéro de la classe est unique
         if (classRepository.existsByNumero(classDto.getNumero())) {
             throw new ClassAlreadyExistsException("Class with this number already exists");
-        }
+        }*/
 
         try {
             Class newClass = Class.builder()

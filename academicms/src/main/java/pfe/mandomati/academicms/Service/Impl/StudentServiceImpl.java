@@ -305,15 +305,21 @@ public class StudentServiceImpl implements StudentService {
                 Student profile = profileOptional.orElseThrow(() -> 
                     new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
                 return StudentDto.builder()
-                        .id(iamStudent.getId())
-                        .cne(profile.getCne())
-                        .username(iamStudent.getUsername())
-                        .firstname(iamStudent.getFirstname())
-                        .lastname(iamStudent.getLastname())
-                        .email(iamStudent.getEmail())
-                        .city(iamStudent.getCity())
-                        .assurance(profile.isAssurance())
-                        .build();
+                .id(iamStudent.getId())
+                .cne(profile.getCne())
+                .username(iamStudent.getUsername())
+                .firstname(iamStudent.getFirstname())
+                .lastname(iamStudent.getLastname())
+                .email(iamStudent.getEmail())
+                .city(iamStudent.getCity())
+                .assurance(profile.isAssurance())
+                .parentName(profile.getParentName())
+                .parentContact(profile.getParentContact())
+                .parentEmail(profile.getParentEmail())
+                .classId(profile.getSchoolClass().getId())
+                .admissionDate(profile.getAdmissionDate())
+                .academicStatus(profile.getAcademicStatus())
+                .build();
             }).collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Failed to get all students", e);
@@ -365,8 +371,22 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentDto> getStudentsByClassId(Long classId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStudentsByClassId'");
+        try {
+            // Vérifier si la classe existe
+            Class classProfile = classRepository.findById(classId)
+                    .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
+    
+            // Récupérer tous les étudiants
+            List<StudentDto> allStudents = getAllStudents();
+    
+            // Filtrer les étudiants par classId
+            return allStudents.stream()
+                    .filter(student -> student.getClassId().equals(classId))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Failed to get students by class id", e);
+            throw new RuntimeException("Failed to get students by class id", e);
+        }
     }
 
     @Override
