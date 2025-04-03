@@ -79,13 +79,13 @@ public class TeacherAssignmentServiceImpl implements TeacherAssignmentService {
     }
 
     @Override
-    public TeacherAssignmentDto updateTeacherAssignment(Long id, TeacherAssignmentDto teacherAssignmentDto) {
+    public TeacherAssignmentDto updateTeacherAssignment(Long id, TeacherAssignmentDto teacherAssignmentDto, String token) {
         try {
             TeacherAssignment existingAssignment = teacherAssignmentRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("TeacherAssignment not found with id " + id));
 
             // Vérifier si l'enseignant existe
-            ResponseEntity<?> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId());
+            ResponseEntity<?> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId(), token);
             if (!teacherResponse.getStatusCode().is2xxSuccessful()) {
                 throw new ResourceNotFoundException("Teacher not found with id " + teacherAssignmentDto.getTeacherId());
             }

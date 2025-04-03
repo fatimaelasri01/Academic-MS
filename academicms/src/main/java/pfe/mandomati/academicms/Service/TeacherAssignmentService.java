@@ -9,7 +9,7 @@ public interface TeacherAssignmentService {
     TeacherAssignmentDto saveTeacherAssignment(TeacherAssignmentDto teacherAssignmentDto, String token);
     List<TeacherAssignmentDto> getAllTeacherAssignments();
     TeacherAssignmentDto getTeacherAssignmentById(Long id);
-    TeacherAssignmentDto updateTeacherAssignment(Long id, TeacherAssignmentDto teacherAssignmentDto);
+    TeacherAssignmentDto updateTeacherAssignment(Long id, TeacherAssignmentDto teacherAssignmentDto, String token);
     void deleteTeacherAssignment(Long id);
     List<TeacherDto> getAllTeachersRh();
 }

@@ -51,9 +51,9 @@ public class TeacherAssignmentController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> updateTeacherAssignment(@PathVariable Long id, @RequestBody TeacherAssignmentDto teacherAssignmentDto) {
+    public ResponseEntity<String> updateTeacherAssignment(@PathVariable Long id, @RequestBody TeacherAssignmentDto teacherAssignmentDto, @RequestHeader("Authorization") String token) {
         try {
-            TeacherAssignmentDto updatedAssignment = teacherAssignmentService.updateTeacherAssignment(id, teacherAssignmentDto);
+            TeacherAssignmentDto updatedAssignment = teacherAssignmentService.updateTeacherAssignment(id, teacherAssignmentDto, token);
             return new ResponseEntity<>("Teacher assignment successfully updated with ID: " + updatedAssignment.getId(), HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>("Failed to update teacher assignment: " + e.getMessage(), HttpStatus.BAD_REQUEST);
