@@ -34,10 +34,10 @@ public class TeacherAssignmentServiceImpl implements TeacherAssignmentService {
     private RhClient rhClient;
 
     @Override
-    public TeacherAssignmentDto saveTeacherAssignment(TeacherAssignmentDto teacherAssignmentDto) {
+    public TeacherAssignmentDto saveTeacherAssignment(TeacherAssignmentDto teacherAssignmentDto, String token) {
         try {
             // Vérifier si l'enseignant existe
-            ResponseEntity<?> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId());
+            ResponseEntity<?> teacherResponse = rhClient.getTeacherById(teacherAssignmentDto.getTeacherId(), token);
             if (!teacherResponse.getStatusCode().is2xxSuccessful()) {
                 throw new ResourceNotFoundException("Teacher not found with id " + teacherAssignmentDto.getTeacherId());
             }

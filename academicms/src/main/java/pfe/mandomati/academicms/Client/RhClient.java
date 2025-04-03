@@ -6,6 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import pfe.mandomati.academicms.Dto.TeacherDto;
 
@@ -13,7 +14,7 @@ import pfe.mandomati.academicms.Dto.TeacherDto;
 public interface RhClient {
 
     @GetMapping("/api/teacher/{id}")
-    public ResponseEntity<?> getTeacherById(@PathVariable Long id);
+    public ResponseEntity<?> getTeacherById(@PathVariable Long id, @RequestHeader("Authorization") String token);
 
     @GetMapping("/api/teacher/speciality/{speciality}")
     public ResponseEntity<?> getTeachersBySpeciality(@PathVariable String speciality);

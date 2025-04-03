@@ -22,9 +22,9 @@ public class TeacherAssignmentController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> createTeacherAssignment(@RequestBody TeacherAssignmentDto teacherAssignmentDto) {
+    public ResponseEntity<String> createTeacherAssignment(@RequestBody TeacherAssignmentDto teacherAssignmentDto, @RequestHeader("Authorization") String token) {
         try {
-            TeacherAssignmentDto createdAssignment = teacherAssignmentService.saveTeacherAssignment(teacherAssignmentDto);
+            TeacherAssignmentDto createdAssignment = teacherAssignmentService.saveTeacherAssignment(teacherAssignmentDto, token);
             return new ResponseEntity<>("Teacher assignment successfully created with ID: " + createdAssignment.getId(), HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity<>("Failed to create teacher assignment: " + e.getMessage(), HttpStatus.BAD_REQUEST);
