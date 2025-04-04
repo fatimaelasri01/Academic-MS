@@ -482,24 +482,25 @@ public class StudentServiceImpl implements StudentService {
     
             // Récupérer les informations de l'utilisateur à partir du service IAMMS
             ResponseEntity<IamDto> responseEntity = iamClient.getUserByUsername(username);
-            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Failed to retrieve user from IAMMS for username: " + username);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                IamDto iamStudent = responseEntity.getBody();
+                if (iamStudent == null || iamStudent.getId() == null) {
+                    throw new RuntimeException("User not found in IAMMS for username: " + username);
+                }
+    
+                logger.info("Retrieved student from IAMMS: {}", iamStudent);
+    
+                // Retrieve academic profile
+                Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
+                Student profile = profileOptional.orElseThrow(() ->
+                    new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
+    
+                return convertToStudentDto(profile, iamStudent);
+            } else {
+                // Handle non-JSON responses (e.g., plain text)
+                String errorMessage = responseEntity.getBody() != null ? responseEntity.getBody().toString() : "Unknown error";
+                throw new RuntimeException("Failed to retrieve user from IAMMS: " + errorMessage);
             }
-    
-            IamDto iamStudent = responseEntity.getBody();
-            if (iamStudent == null || iamStudent.getId() == null) {
-                throw new RuntimeException("User not found in IAMMS for username: " + username);
-            }
-    
-            logger.info("Retrieved student from IAMMS: {}", iamStudent);
-    
-            // Récupérer le profil académique de l'étudiant
-            Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
-            Student profile = profileOptional.orElseThrow(() -> 
-                new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
-    
-            // Convertir en DTO et retourner
-            return convertToStudentDto(profile, iamStudent);
         } catch (Exception e) {
             logger.error("Failed to get student by token", e);
             throw new RuntimeException("Failed to get student by token", e);
