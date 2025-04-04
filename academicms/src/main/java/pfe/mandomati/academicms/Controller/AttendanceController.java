@@ -28,7 +28,7 @@ public class AttendanceController {
     private static final Logger logger = Logger.getLogger(AttendanceController.class.getName());
 
     @PostMapping("/create")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<String> createAttendance(@RequestBody AttendanceDto attendanceDto) {
         AttendanceDto createdAttendance = attendanceService.createAttendance(attendanceDto);
         return ResponseEntity.ok("Attendance successfully created with ID: " + createdAttendance.getId());
@@ -42,7 +42,7 @@ public class AttendanceController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<String> deleteAttendance(@PathVariable Long id) {
         attendanceService.deleteAttendance(id);
         return ResponseEntity.ok("Attendance successfully deleted with ID: " + id);

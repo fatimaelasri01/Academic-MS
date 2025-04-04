@@ -8,14 +8,14 @@ import pfe.mandomati.academicms.Model.Class;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
     List<Student> findBySchoolClass(Class schoolClass);
 
-    List<Student> findByAcademicStatus(String academicStatus);
-    Student findByCne(String cne);
+    Optional<Student> findByCne(String cne);
     List<Student> findByAdmissionDate(Date admissionDate);
     
     List<Student> findByParentEmail(String parentEmail);

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import pfe.mandomati.academicms.Dto.IamDto;
 
@@ -26,6 +27,9 @@ public interface IamClient {
     @DeleteMapping("/api/auth/user/delete/{username}")
     ResponseEntity<String> deleteUser(@PathVariable String username);
 
+    @GetMapping("/api/auth/user/{username}")
+    ResponseEntity<IamDto> getUserByUsername(@PathVariable String username);
+
     @GetMapping("/api/auth/user/{email}")
     ResponseEntity<String> checkUserExists(@PathVariable String email);
 
@@ -40,5 +44,13 @@ public interface IamClient {
     
     @GetMapping("/api/auth/user/role/parent")
     ResponseEntity<List<IamDto>> getAllParents();
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<IamDto> getUserByEmail(@PathVariable String email);
+
+    @GetMapping("/fullname")
+    public ResponseEntity<List<IamDto>> getUsersByFirstnameAndLastname(
+        @RequestParam String firstname, 
+        @RequestParam String lastname);
 
 }

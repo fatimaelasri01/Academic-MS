@@ -27,6 +27,11 @@ import pfe.mandomati.academicms.Model.Class;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import org.json.JSONObject;
+import java.util.Base64;
+
+
 @Service
 public class StudentServiceImpl implements StudentService {
 
@@ -304,24 +309,7 @@ public class StudentServiceImpl implements StudentService {
                 Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
                 Student profile = profileOptional.orElseThrow(() -> 
                     new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
-                return StudentDto.builder()
-                .id(iamStudent.getId())
-                .cne(profile.getCne())
-                .username(iamStudent.getUsername())
-                .firstname(iamStudent.getFirstname())
-                .lastname(iamStudent.getLastname())
-                .email(iamStudent.getEmail())
-                .city(iamStudent.getCity())
-                .address(iamStudent.getAddress())
-                .birthDate(iamStudent.getBirthDate())
-                .assurance(profile.isAssurance())
-                .parentName(profile.getParentName())
-                .parentContact(profile.getParentContact())
-                .parentEmail(profile.getParentEmail())
-                .classId(profile.getSchoolClass().getId())
-                .admissionDate(profile.getAdmissionDate())
-                .academicStatus(profile.getAcademicStatus())
-                .build();
+                return convertToStudentDto(profile, iamStudent);
             }).collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Failed to get all students", e);
@@ -349,24 +337,7 @@ public class StudentServiceImpl implements StudentService {
             Optional<Student> profileOptional = studentAcademicProfileRepository.findById(id);
             Student profile = profileOptional.orElseThrow(() -> 
                 new RuntimeException("Student profile not found for studentId: " + id));
-            return StudentDto.builder()
-                    .id(iamStudent.getId())
-                    .cne(profile.getCne())
-                    .username(iamStudent.getUsername())
-                    .firstname(iamStudent.getFirstname())
-                    .lastname(iamStudent.getLastname())
-                    .email(iamStudent.getEmail())
-                    .city(iamStudent.getCity())
-                    .address(iamStudent.getAddress())
-                    .birthDate(iamStudent.getBirthDate())
-                    .assurance(profile.isAssurance())
-                    .parentName(profile.getParentName())
-                    .parentContact(profile.getParentContact())
-                    .parentEmail(profile.getParentEmail())
-                    .classId(profile.getSchoolClass().getId())
-                    .admissionDate(profile.getAdmissionDate())
-                    .academicStatus(profile.getAcademicStatus())
-                    .build();
+            return convertToStudentDto(profile, iamStudent);
         } catch (Exception e) {
             logger.error("Failed to get student by id", e);
             throw new RuntimeException("Failed to get student by id", e);
@@ -394,14 +365,186 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<StudentDto> getStudentsByCne(String cne) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStudentsByCne'");
+    public StudentDto getStudentByCne(String cne) {
+        try {
+            logger.info("Getting student by CNE: {}", cne);
+    
+            // Rechercher l'étudiant dans la base de données par CNE
+            Student student = studentAcademicProfileRepository.findByCne(cne)
+                    .orElseThrow(() -> new RuntimeException("Student not found with CNE: " + cne));
+    
+            // Récupérer les informations de l'étudiant depuis IAMMS
+            ResponseEntity<IamDto> responseEntity = iamClient.getStudentById(student.getStudentId().toString());
+            IamDto iamStudent = responseEntity.getBody();
+            return convertToStudentDto(student, iamStudent);
+        } catch (Exception e) {
+            logger.error("Failed to get student by CNE", e);
+            throw new RuntimeException("Failed to get student by CNE", e);
+        }
+    }
+    
+    @Override
+    public List<StudentDto> getStudentsByAdmissionDate(Date admissionDate) {
+        try {
+            logger.info("Getting students by admission date: {}", admissionDate);
+    
+            // Rechercher les étudiants dans la base de données par date d'admission
+            List<Student> students = studentAcademicProfileRepository.findByAdmissionDate(admissionDate);
+    
+            if (students.isEmpty()) {
+                throw new RuntimeException("No students found with admission date: " + admissionDate);
+            }
+    
+            // Construire et retourner la liste des DTOs des étudiants
+            return students.stream().map(student -> {
+                ResponseEntity<IamDto> responseEntity = iamClient.getStudentById(student.getStudentId().toString());
+                IamDto iamStudent = responseEntity.getBody();
+                return convertToStudentDto(student, iamStudent);
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Failed to get students by admission date", e);
+            throw new RuntimeException("Failed to get students by admission date", e);
+        }
     }
 
     @Override
-    public List<StudentDto> getStudentsByAdmissionDate(Date admissionDate) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStudentsByAdmissionDate'");
+    public List<StudentDto> getStudentByFullName(String firstname, String lastname) {
+        try {
+            logger.info("Getting students by full name: {} {}", firstname, lastname);
+    
+            // Appeler IAMMS pour récupérer les utilisateurs par prénom et nom
+            ResponseEntity<List<IamDto>> responseEntity = iamClient.getUsersByFirstnameAndLastname(firstname, lastname);
+            List<IamDto> users = responseEntity.getBody();
+    
+            if (users == null || users.isEmpty()) {
+                throw new RuntimeException("No users found with full name: " + firstname + " " + lastname);
+            }
+    
+            // Filtrer uniquement les étudiants
+            List<IamDto> students = users.stream()
+                    .filter(user -> user.getRole() != null && "STUDENT".equalsIgnoreCase(user.getRole().getName()))
+                    .collect(Collectors.toList());
+    
+            if (students.isEmpty()) {
+                throw new RuntimeException("No students found with full name: " + firstname + " " + lastname);
+            }
+    
+            // Construire la liste des profils académiques des étudiants
+            return students.stream().map(iamStudent -> {
+                Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
+                Student profile = profileOptional.orElseThrow(() -> 
+                    new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
+                return convertToStudentDto(profile, iamStudent);
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Failed to get students by full name", e);
+            throw new RuntimeException("Failed to get students by full name", e);
+        }
     }
+
+    @Override
+    public StudentDto getStudentByEmail(String email) {
+        try {
+            logger.info("Getting student by email: {}", email);
+    
+            // Appeler IAMMS pour récupérer l'utilisateur par email
+            ResponseEntity<IamDto> responseEntity = iamClient.getUserByEmail(email);
+            IamDto iamStudent = responseEntity.getBody();
+    
+            if (iamStudent == null) {
+                throw new RuntimeException("Student not found in IAMMS with email: " + email);
+            }
+    
+            // Récupérer le profil académique de l'étudiant
+            Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
+            Student profile = profileOptional.orElseThrow(() -> 
+                new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
+    
+            return convertToStudentDto(profile, iamStudent);
+        } catch (Exception e) {
+            logger.error("Failed to get student by email", e);
+            throw new RuntimeException("Failed to get student by email", e);
+        }
+    }
+
+    @Override
+    public StudentDto getStudentByToken(String token) {
+        try {
+            logger.info("Extracting username from token: {}", token);
+    
+            // Extraire le username à partir du token
+            String username = extractUsernameFromToken(token);
+            if (username == null || username.isEmpty()) {
+                throw new RuntimeException("Invalid token: Unable to extract username");
+            }
+    
+            logger.info("Username extracted from token: {}", username);
+    
+            // Récupérer les informations de l'utilisateur à partir du service IAMMS
+            ResponseEntity<IamDto> responseEntity = iamClient.getUserByUsername(username);
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Failed to retrieve user from IAMMS for username: " + username);
+            }
+    
+            IamDto iamStudent = responseEntity.getBody();
+            if (iamStudent == null || iamStudent.getId() == null) {
+                throw new RuntimeException("User not found in IAMMS for username: " + username);
+            }
+    
+            logger.info("Retrieved student from IAMMS: {}", iamStudent);
+    
+            // Récupérer le profil académique de l'étudiant
+            Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
+            Student profile = profileOptional.orElseThrow(() -> 
+                new RuntimeException("Student profile not found for studentId: " + iamStudent.getId()));
+    
+            // Convertir en DTO et retourner
+            return convertToStudentDto(profile, iamStudent);
+        } catch (Exception e) {
+            logger.error("Failed to get student by token", e);
+            throw new RuntimeException("Failed to get student by token", e);
+        }
+    }
+
+    private String extractUsernameFromToken(String token) {
+        try {
+            // Séparer le token en 3 parties : Header, Payload, Signature
+            String payload = token.split("\\.")[1];
+
+            // Décoder le payload en base64
+            String decodedPayload = new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8);
+
+            // Extraire l'username du payload (en supposant que l'username soit sous la clé "preferred_username")
+            JSONObject json = new JSONObject(decodedPayload);
+            return json.getString("preferred_username");
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token format or unable to extract username", e);
+        }
+    }
+
+    private StudentDto convertToStudentDto(Student student, IamDto iamStudent) {
+        if (iamStudent == null) {
+            throw new RuntimeException("IAM student data is null for studentId: " + student.getStudentId());
+        }
+
+        return StudentDto.builder()
+                .id(iamStudent.getId())
+                .cne(student.getCne())
+                .username(iamStudent.getUsername())
+                .firstname(iamStudent.getFirstname())
+                .lastname(iamStudent.getLastname())
+                .email(iamStudent.getEmail())
+                .city(iamStudent.getCity())
+                .address(iamStudent.getAddress())
+                .birthDate(iamStudent.getBirthDate())
+                .assurance(student.isAssurance())
+                .parentName(student.getParentName())
+                .parentContact(student.getParentContact())
+                .parentEmail(student.getParentEmail())
+                .classId(student.getSchoolClass().getId())
+                .admissionDate(student.getAdmissionDate())
+                .academicStatus(student.getAcademicStatus())
+                .build();
+    }
+    
 }

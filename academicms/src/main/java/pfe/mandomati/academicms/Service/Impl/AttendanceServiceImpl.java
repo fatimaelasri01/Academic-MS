@@ -14,10 +14,10 @@ import pfe.mandomati.academicms.Repository.AttendanceRepository;
 import pfe.mandomati.academicms.Repository.ClassScheduleRepository;
 import pfe.mandomati.academicms.Repository.StudentRepository;
 import pfe.mandomati.academicms.Service.AttendanceService;
-import pfe.mandomati.academicms.Service.ClassScheduleService;
+//import pfe.mandomati.academicms.Service.ClassScheduleService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.util.stream.Collectors;
 
@@ -33,10 +33,10 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Autowired
     private StudentRepository studentAcademicProfileRepository;
 
-    @Autowired
-    private ClassScheduleService classScheduleService;
+    //@Autowired
+    //private ClassScheduleService classScheduleService;
 
-    private static final Logger logger = LoggerFactory.getLogger(AttendanceServiceImpl.class);
+    //private static final Logger logger = LoggerFactory.getLogger(AttendanceServiceImpl.class);
 
     @Override
     public AttendanceDto createAttendance(AttendanceDto attendanceDto) {
