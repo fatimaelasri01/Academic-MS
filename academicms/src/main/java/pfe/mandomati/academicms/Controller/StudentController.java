@@ -33,7 +33,7 @@ public class StudentController {
 
     @GetMapping("/profile")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<StudentDto> getStudentProfile(@RequestHeader("Authorisation") String authorizationHeader ) {
+    public ResponseEntity<StudentDto> getStudentProfile(@RequestHeader("Authorization") String authorizationHeader ) {
         String token = authorizationHeader.replace("Bearer ", "");
         StudentDto student = studentService.getStudentByToken(token);
         return ResponseEntity.ok(student);        
