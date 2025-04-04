@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -89,7 +90,7 @@ public class StudentController {
 
     @GetMapping("/admission-date/{admissionDate}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
-    public ResponseEntity<List<StudentDto>> getStudentsByAdmissionDate(@PathVariable Date admissionDate) {
+    public ResponseEntity<List<StudentDto>> getStudentsByAdmissionDate(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date admissionDate) {
         List<StudentDto> students = studentService.getStudentsByAdmissionDate(admissionDate);
         return ResponseEntity.ok(students);
     }
