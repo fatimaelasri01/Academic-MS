@@ -45,10 +45,10 @@ public interface IamClient {
     @GetMapping("/api/auth/user/role/parent")
     ResponseEntity<List<IamDto>> getAllParents();
 
-    @GetMapping("/email/{email}")
+    @GetMapping("/api/auth/user/email/{email}")
     public ResponseEntity<IamDto> getUserByEmail(@PathVariable String email);
 
-    @GetMapping("/fullname")
+    @GetMapping("/api/auth/user/fullname")
     public ResponseEntity<List<IamDto>> getUsersByFirstnameAndLastname(
         @RequestParam String firstname, 
         @RequestParam String lastname);
