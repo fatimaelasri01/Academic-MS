@@ -15,7 +15,7 @@ import pfe.mandomati.academicms.Dto.IamDto;
 import java.util.List;
 
 
-@FeignClient(name = "iamms", url = "https://iamms.mandomati.com", configuration = FeignConfig.class)
+@FeignClient(name = "iamms", url = "https://iamms.mandomati.com")
 public interface IamClient {
 
     @PostMapping("/api/auth/register")
