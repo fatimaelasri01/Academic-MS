@@ -27,7 +27,7 @@ public interface IamClient {
     @DeleteMapping("/api/auth/user/delete/{username}")
     ResponseEntity<String> deleteUser(@PathVariable String username);
 
-    @GetMapping("/api/auth/user/{username}")
+    @GetMapping("/api/auth/user/profile/{username}")
     ResponseEntity<IamDto> getUserByUsername(@PathVariable String username);
 
     @GetMapping("/api/auth/user/{email}")
