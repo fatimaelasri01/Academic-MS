@@ -3,6 +3,11 @@ server:
   servlet:
     context-path: /api
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html      
+    url: /api/v3/api-docs   
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/academicms
