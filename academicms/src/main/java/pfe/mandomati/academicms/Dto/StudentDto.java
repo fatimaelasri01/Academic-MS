@@ -20,7 +20,7 @@ public class StudentDto extends IamDto{
     // Données académiques spécifiques
     //private Long studentId; // Même ID que dans IAM-MS
     private String cne;
-    private Long classId;
+    private String className;
     private Date admissionDate; 
     private String academicStatus;
     private boolean assurance;

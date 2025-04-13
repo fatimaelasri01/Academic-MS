@@ -12,5 +12,5 @@ public interface ClassService {
     List<ClassDto> getAllClasses();
     ClassDto getClassById(Long id);
     List<ClassDto> getClassesByFiliere(String filiereName);
-  
+    ClassDto getClassByName(String filiereName, Integer numero);
 }

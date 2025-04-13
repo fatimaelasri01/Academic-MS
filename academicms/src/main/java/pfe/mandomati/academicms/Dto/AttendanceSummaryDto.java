@@ -11,7 +11,6 @@ public class AttendanceSummaryDto {
     private Long id;
     private String studentId;
     private String academicYear;
-    private int totalPresent;
     private int totalAbsent;
     private int totalLate;
     private int totalExcused;

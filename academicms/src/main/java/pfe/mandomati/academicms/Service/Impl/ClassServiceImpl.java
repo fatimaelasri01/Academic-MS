@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import pfe.mandomati.academicms.Dto.ClassDto;
 import pfe.mandomati.academicms.Exception.ClassCreationException;
+import pfe.mandomati.academicms.Exception.ResourceNotFoundException;
 import pfe.mandomati.academicms.Model.Class;
 import pfe.mandomati.academicms.Model.Filiere;
 import pfe.mandomati.academicms.Repository.ClassRepository;
@@ -103,6 +104,13 @@ public class ClassServiceImpl implements ClassService {
         return classRepository.findByFiliere(filiere).stream()
                 .map(this::classToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ClassDto getClassByName(String filiereName, Integer numero) {
+    Class classEntity = classRepository.findByFiliereNameAndNumero(filiereName, numero)
+            .orElseThrow(() -> new ResourceNotFoundException("Class not found with filiereName: " + filiereName + " and numero: " + numero));
+        return classToDto(classEntity);
     }
 
     private ClassDto classToDto(Class c) {

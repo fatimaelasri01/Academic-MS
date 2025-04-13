@@ -37,7 +37,9 @@ public class UserDto {
 
     private String cne;
 
-    private Long classId;
+    private String filiereName;
+
+    private Integer numero;
 
     private Date admissionDate;
 

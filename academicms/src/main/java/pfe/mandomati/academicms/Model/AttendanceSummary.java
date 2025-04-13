@@ -24,8 +24,6 @@ public class AttendanceSummary {
     @Column(nullable = false)
     private String academicYear;
     
-    private int totalPresent;
-    
     private int totalAbsent;
     
     private int totalLate;

@@ -59,4 +59,11 @@ public class ClassController {
         List<ClassDto> classDtos = classService.getClassesByFiliere(filiereName);
         return new ResponseEntity<>(classDtos, HttpStatus.OK);
     }
+
+    @GetMapping("/name/{filiereName}/{numero}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+    public ResponseEntity<ClassDto> getClassByName(@PathVariable String filiereName, @PathVariable int numero) {
+        ClassDto classDto = classService.getClassByName(filiereName, numero);
+        return new ResponseEntity<>(classDto, HttpStatus.OK);
+    }
 }

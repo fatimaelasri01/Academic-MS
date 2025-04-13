@@ -4,6 +4,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,8 +28,9 @@ import pfe.mandomati.academicms.Model.Class;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
-import org.json.JSONObject;
 import java.util.Base64;
 
 
@@ -129,8 +131,15 @@ public class StudentServiceImpl implements StudentService {
                 logger.info("Parent already exists in academicms: {}", existingParentProfile);
             }
 
-            Class classProfile = classRepository.findById(userDTO.getClassId())
-                    .orElseThrow(() -> new RuntimeException("Class not found"));
+            // Rechercher la classe en fonction de filiereName et numero
+            Class classProfile = classRepository.findByFiliereNameAndNumero(userDTO.getFiliereName(), userDTO.getNumero())
+                .orElseThrow(() -> new RuntimeException("Class not found with filiereName: " + userDTO.getFiliereName() + " and numero: " + userDTO.getNumero()));
+
+            // Vérifier la capacité de la classe
+            long currentStudentCount = studentAcademicProfileRepository.countBySchoolClass(classProfile);
+            if (currentStudentCount >= classProfile.getCapacity()) {
+                throw new RuntimeException("Class capacity exceeded for class: " + userDTO.getFiliereName() + userDTO.getNumero());
+            }
 
             Student studentProfile = Student.builder()
                     .cne(userDTO.getCne())
@@ -199,8 +208,15 @@ public class StudentServiceImpl implements StudentService {
 
             iamClient.editUser(URLEncoder.encode(userDto.getUsername(), StandardCharsets.UTF_8.toString()), iamStudentDto);
 
-            Class classProfile = classRepository.findById(userDto.getClassId())
-                    .orElseThrow(() -> new RuntimeException("Class not found"));
+            // Rechercher la classe en fonction de filiereName et numero
+            Class classProfile = classRepository.findByFiliereNameAndNumero(userDto.getFiliereName(), userDto.getNumero())
+                .orElseThrow(() -> new RuntimeException("Class not found with filiereName: " + userDto.getFiliereName() + " and numero: " + userDto.getNumero()));
+
+            // Vérifier la capacité de la classe
+            long currentStudentCount = studentAcademicProfileRepository.countBySchoolClass(classProfile);
+            if (currentStudentCount >= classProfile.getCapacity()) {
+                throw new RuntimeException("Class capacity exceeded for class: " + userDto.getFiliereName() + userDto.getNumero());
+            }
 
             // Mettre à jour les informations de l'étudiant dans Academic-MS
             existingStudentProfile.setCne(userDto.getCne());
@@ -356,7 +372,7 @@ public class StudentServiceImpl implements StudentService {
     
             // Filtrer les étudiants par classId
             return allStudents.stream()
-                    .filter(student -> student.getClassId().equals(classId))
+                    .filter(student -> student.getClassName().equals(classProfile.getFiliere().getName() + classProfile.getNumero()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Failed to get students by class id", e);
@@ -509,15 +525,14 @@ public class StudentServiceImpl implements StudentService {
 
     private String extractUsernameFromToken(String token) {
         try {
-            // Séparer le token en 3 parties : Header, Payload, Signature
             String payload = token.split("\\.")[1];
-
-            // Décoder le payload en base64
             String decodedPayload = new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8);
-
-            // Extraire l'username du payload (en supposant que l'username soit sous la clé "preferred_username")
-            JSONObject json = new JSONObject(decodedPayload);
-            return json.getString("preferred_username");
+    
+            // Utiliser Jackson pour convertir le payload JSON en Map
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> jsonMap = objectMapper.readValue(decodedPayload, new TypeReference<Map<String, Object>>() {});
+    
+            return (String) jsonMap.get("preferred_username");
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid token format or unable to extract username", e);
         }
@@ -527,6 +542,9 @@ public class StudentServiceImpl implements StudentService {
         if (iamStudent == null) {
             throw new RuntimeException("IAM student data is null for studentId: " + student.getStudentId());
         }
+
+        // Construire className à partir de filiereName et numero
+        String className = student.getSchoolClass().getFiliere().getName() + student.getSchoolClass().getNumero();
 
         return StudentDto.builder()
                 .id(iamStudent.getId())
@@ -542,7 +560,7 @@ public class StudentServiceImpl implements StudentService {
                 .parentName(student.getParentName())
                 .parentContact(student.getParentContact())
                 .parentEmail(student.getParentEmail())
-                .classId(student.getSchoolClass().getId())
+                .className(className)
                 .admissionDate(student.getAdmissionDate())
                 .academicStatus(student.getAcademicStatus())
                 .build();
