@@ -5,7 +5,7 @@ server:
 
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html      
+    path: /api/swagger-ui.html      
     url: /api/v3/api-docs   
 
 spring:
