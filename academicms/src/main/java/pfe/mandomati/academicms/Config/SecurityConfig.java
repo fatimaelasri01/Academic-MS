@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/student/create", "/api/student/update/**", "/api/student/delete/**").hasRole("ADMIN")
                 .requestMatchers("/api/attendance/**").hasAnyRole("ADMIN", "ROOT", "TEACHER")
                 .requestMatchers("/api/student/**").hasAnyRole("ROOT", "ADMIN")
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
