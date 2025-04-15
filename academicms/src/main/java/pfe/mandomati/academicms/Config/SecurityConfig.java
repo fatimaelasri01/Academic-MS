@@ -31,7 +31,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/swagger-ui/**", "/api/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/student/profile").hasRole("STUDENT")
                 .requestMatchers("/class/**", "/cne/**", "/email/**", "/fullname/**").hasAnyRole("ADMIN", "ROOT", "TEACHER)")
                 .requestMatchers("/api/student/create", "/api/student/update/**", "/api/student/delete/**").hasRole("ADMIN")
