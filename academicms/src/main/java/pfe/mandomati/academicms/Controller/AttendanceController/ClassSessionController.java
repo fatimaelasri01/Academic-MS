@@ -9,7 +9,7 @@ import pfe.mandomati.academicms.Service.AttendanceService.ClassSessionService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/class-sessions")
+@RequestMapping("/class-session")
 public class ClassSessionController {
 
     @Autowired
