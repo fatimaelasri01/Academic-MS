@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-import pfe.mandomati.academicms.Dto.TeacherDto;
+import pfe.mandomati.academicms.Dto.ClassDto.TeacherDto;
 
 @FeignClient(name = "rhms", url = "https://rhms.mandomati.com")
 public interface RhClient {

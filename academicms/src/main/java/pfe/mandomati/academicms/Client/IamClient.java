@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import pfe.mandomati.academicms.Dto.IamDto;
+import pfe.mandomati.academicms.Dto.StudentDto.IamDto;
 
 import java.util.List;
 
