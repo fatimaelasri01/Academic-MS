@@ -1,7 +1,1 @@
 .idea/
-
-# Dossier de build Maven
-target/
-
-# Dossiers vides ou inutiles
-**/*/
