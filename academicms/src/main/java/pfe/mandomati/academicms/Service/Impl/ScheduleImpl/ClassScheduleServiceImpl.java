@@ -29,7 +29,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
     public ClassScheduleDto createClassSchedule(ClassScheduleDto classScheduleDto, MultipartFile file) {
         try {
             // Sauvegarder le fichier
-            String filePath = FileUtil.saveFile(uploadDir, file);
+            String filePath = FileUtil.saveFile(uploadDir, file, "class-schedule");
 
             // Créer l'entité ClassSchedule
             ClassSchedule classSchedule = ClassSchedule.builder()
@@ -54,7 +54,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
             // Supprimer l'ancien fichier si un nouveau fichier est uploadé
             if (file != null) {
                 FileUtil.deleteFile(existingClassSchedule.getPathFile());
-                String filePath = FileUtil.saveFile(uploadDir, file);
+                String filePath = FileUtil.saveFile(uploadDir, file, "class-schedule");
                 existingClassSchedule.setPathFile(filePath);
             }
 

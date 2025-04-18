@@ -24,7 +24,6 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
-
     @PostMapping("/create")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<String> createAttendance(@RequestBody AttendanceDto attendanceDto) {

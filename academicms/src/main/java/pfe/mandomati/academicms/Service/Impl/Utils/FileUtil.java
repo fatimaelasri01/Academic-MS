@@ -7,10 +7,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FileUtil {
-    public static String saveFile(String uploadDir, MultipartFile file) throws IOException {
+    public static String saveFile(String baseDir, MultipartFile file, String subDir) throws IOException {
+        // Create the full directory path (baseDir + optional subDir)
+        Path directoryPath = subDir != null ? Paths.get(baseDir, subDir) : Paths.get(baseDir);
+        if (!Files.exists(directoryPath)) {
+            Files.createDirectories(directoryPath); // Create directory if it doesn't exist
+        }
+
+        // Save the file
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = Paths.get(uploadDir, fileName);
+        Path filePath = directoryPath.resolve(fileName);
         Files.copy(file.getInputStream(), filePath);
+
         return filePath.toString();
     }
 

@@ -50,7 +50,12 @@ public class LessonFileServiceImpl implements LessonFileService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
         
         try {
-            String filePath = FileUtil.saveFile(uploadDirectory, file);
+            String subDir = switch (type) {
+                case LESSON_CONTENT -> "content";
+                case TD_CONTENT -> "td";
+                case ADDITIONAL_RESOURCE -> "resource";
+            };
+            String filePath = FileUtil.saveFile(uploadDirectory, file, subDir);
             
             LessonFile lessonFile = new LessonFile();
             lessonFile.setName(file.getOriginalFilename());

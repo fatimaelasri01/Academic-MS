@@ -4,7 +4,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,13 +21,9 @@ import pfe.mandomati.academicms.Model.Student.Student;
 import pfe.mandomati.academicms.Repository.ClassRepo.ClassRepository;
 
 import pfe.mandomati.academicms.Repository.StudentRepo.StudentRepository;
+import pfe.mandomati.academicms.Service.Impl.Utils.ExtractUsernameFromToken;
 import pfe.mandomati.academicms.Service.StudentService.StudentService;
 import pfe.mandomati.academicms.Model.Class.Class;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import java.util.Base64;
 
 
 @Slf4j
@@ -484,7 +479,7 @@ public class StudentServiceImpl implements StudentService {
             log.info("Extracting username from token: {}", token);
     
             // Extraire le username à partir du token
-            String username = extractUsernameFromToken(token);
+            String username = ExtractUsernameFromToken.extractUsernameFromToken(token);
             if (username == null || username.isEmpty()) {
                 throw new RuntimeException("Invalid token: Unable to extract username");
             }
@@ -515,21 +510,6 @@ public class StudentServiceImpl implements StudentService {
         } catch (Exception e) {
             log.error("Failed to get student by token", e);
             throw new RuntimeException("Failed to get student by token", e);
-        }
-    }
-
-    private String extractUsernameFromToken(String token) {
-        try {
-            String payload = token.split("\\.")[1];
-            String decodedPayload = new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8);
-    
-            // Utiliser Jackson pour convertir le payload JSON en Map
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> jsonMap = objectMapper.readValue(decodedPayload, new TypeReference<Map<String, Object>>() {});
-    
-            return (String) jsonMap.get("preferred_username");
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid token format or unable to extract username", e);
         }
     }
 
