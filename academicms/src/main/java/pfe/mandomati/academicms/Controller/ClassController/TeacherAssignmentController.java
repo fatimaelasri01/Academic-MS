@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Controller.ClassController;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,11 +15,11 @@ import pfe.mandomati.academicms.Dto.ClassDto.TeacherDto;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/teacher-assignment")
 public class TeacherAssignmentController {
 
-    @Autowired
-    private TeacherAssignmentService teacherAssignmentService;
+    private final TeacherAssignmentService teacherAssignmentService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")

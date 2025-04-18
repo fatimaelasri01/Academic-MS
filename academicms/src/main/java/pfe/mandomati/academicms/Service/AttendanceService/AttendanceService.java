@@ -9,5 +9,5 @@ public interface AttendanceService {
     void deleteAttendance(Long id);
     List<AttendanceDto> getAllAttendances();
     AttendanceDto getAttendanceById(Long id);
-    List<AttendanceDto> getAttendancesByStudentId(Long studentId); // Nouvelle méthode
+    List<AttendanceDto> getAttendancesByStudentId(Long studentId);
 }

@@ -3,7 +3,7 @@ package pfe.mandomati.academicms.Controller.AttendanceController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +14,11 @@ import pfe.mandomati.academicms.Service.AttendanceService.AttendanceSummaryServi
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/attendance-summary")
 public class AttendanceSummaryController {
 
-    @Autowired
-    private AttendanceSummaryService attendanceSummaryService;
+    private final AttendanceSummaryService attendanceSummaryService;
 
     @Operation(summary = "Get attendance summary by student", description = "Retrieve attendance statistics (absent, late, excused) for a specific student.")
     @ApiResponses(value = {
@@ -53,6 +53,17 @@ public class AttendanceSummaryController {
     public ResponseEntity<List<AttendanceSummaryDto>> getTop3ClassesWithMostAbsences() {
         List<AttendanceSummaryDto> topClasses = attendanceSummaryService.getTop3ClassesWithMostAbsences();
         return ResponseEntity.ok(topClasses);
+    }
+
+    @Operation(summary = "Get top 3 students with the most absences", description = "Retrieve the top 3 students with the highest number of absences.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved top 3 students with the most absences")
+    })
+    @GetMapping("/top-3-absent-students")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+    public ResponseEntity<List<AttendanceSummaryDto>> getTop3StudentsWithMostAbsences() {
+        List<AttendanceSummaryDto> topStudents = attendanceSummaryService.getTopAbsentStudents();
+        return ResponseEntity.ok(topStudents);
     }
 
     @Operation(summary = "Get global attendance summary for an academic year", description = "Retrieve global attendance statistics (absent, late, excused) for a specific academic year.")

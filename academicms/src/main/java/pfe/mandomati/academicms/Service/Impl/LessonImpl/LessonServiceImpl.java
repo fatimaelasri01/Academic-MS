@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pfe.mandomati.academicms.Model.Lesson.Lesson;
 import pfe.mandomati.academicms.Dto.LessonDto.LessonDto;
@@ -19,10 +19,10 @@ import pfe.mandomati.academicms.Exception.ResourceNotFoundException;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class LessonServiceImpl implements LessonService {
 
-    @Autowired
-    private  LessonRepository lessonRepository;
+    private final LessonRepository lessonRepository;
 
     @Override
     public LessonDto createLesson(LessonDto lessonDto) {

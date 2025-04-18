@@ -1,6 +1,7 @@
 package pfe.mandomati.academicms.Service.Impl.ClassImpl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pfe.mandomati.academicms.Client.RhClient;
@@ -19,18 +20,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TeacherAssignmentServiceImpl implements TeacherAssignmentService {
 
-    @Autowired
     private TeacherAssignmentRepository teacherAssignmentRepository;
 
-    @Autowired
     private ClassRepository classRepository;
 
-    @Autowired
     private SubjectRepository subjectRepository;
 
-    @Autowired
     private RhClient rhClient;
 
     @Override

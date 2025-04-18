@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Service.Impl.LessonImpl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
@@ -20,30 +19,21 @@ import pfe.mandomati.academicms.Model.Lesson.Lesson;
 import pfe.mandomati.academicms.Model.Lesson.LessonFile;
 import pfe.mandomati.academicms.Repository.LessonRepo.LessonFileRepository;
 import pfe.mandomati.academicms.Repository.LessonRepo.LessonRepository;
+import pfe.mandomati.academicms.Service.Impl.Utils.FileUtil;
 import pfe.mandomati.academicms.Service.LessonService.LessonFileService;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class LessonFileServiceImpl implements LessonFileService {
 
 
-    @Autowired
-    private LessonRepository lessonRepository;
+    private final LessonRepository lessonRepository;
 
-    @Autowired
-    private LessonFileRepository lessonFileRepository;
+    private final LessonFileRepository lessonFileRepository;
 
     @Value("${file.upload.lesson-directory}")
     private String uploadDirectory;
-
-    { 
-        // Create upload directory if it doesn't exist
-        try {
-            Files.createDirectories(Paths.get(uploadDirectory));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not initialize folder for upload!");
-        }
-    }
 
     @Override
     public Set<FileInfoDto> getFilesByLessonId(Long lessonId) {
@@ -60,13 +50,11 @@ public class LessonFileServiceImpl implements LessonFileService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
         
         try {
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(uploadDirectory, fileName);
-            Files.copy(file.getInputStream(), filePath);
+            String filePath = FileUtil.saveFile(uploadDirectory, file);
             
             LessonFile lessonFile = new LessonFile();
             lessonFile.setName(file.getOriginalFilename());
-            lessonFile.setFilePath(filePath.toString());
+            lessonFile.setFilePath(filePath);
             lessonFile.setType(type);
             lessonFile.setLesson(lesson);
             
@@ -82,11 +70,12 @@ public class LessonFileServiceImpl implements LessonFileService {
         LessonFile lessonFile = lessonFileRepository.findByIdAndLessonId(fileId, lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                     "File not found with id: " + fileId + " for lesson id: " + lessonId));
-        
+
         try {
-            Files.deleteIfExists(Paths.get(lessonFile.getFilePath()));
+            FileUtil.deleteFile(lessonFile.getFilePath());
+            //Files.deleteIfExists(Paths.get(lessonFile.getFilePath()));
             lessonFileRepository.delete(lessonFile);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Could not delete the file. Error: " + e.getMessage());
         }
     }

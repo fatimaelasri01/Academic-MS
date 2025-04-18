@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Controller.ScheduleController;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -11,11 +11,11 @@ import pfe.mandomati.academicms.Service.ScheduleService.ClassScheduleService;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/class-schedule")
 public class ClassScheduleController {
 
-    @Autowired
-    private ClassScheduleService classScheduleService;
+    private final ClassScheduleService classScheduleService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")

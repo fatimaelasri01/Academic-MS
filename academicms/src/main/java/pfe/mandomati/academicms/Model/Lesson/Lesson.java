@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pfe.mandomati.academicms.Model.Class.Subject;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +32,10 @@ public class Lesson {
     private String teacherName;
 
     private Long teacherId;
+
+    @ManyToOne
+    @JoinColumn(name = "subject_id", nullable = false)
+    private Subject subject;
     
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<LessonFile> files = new HashSet<>();   

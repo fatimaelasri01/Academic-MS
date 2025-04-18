@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Controller.AttendanceController;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pfe.mandomati.academicms.Dto.AttendanceDto.ClassSessionDto;
@@ -9,11 +9,11 @@ import pfe.mandomati.academicms.Service.AttendanceService.ClassSessionService;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/class-session")
 public class ClassSessionController {
 
-    @Autowired
-    private ClassSessionService classSessionService;
+    private final ClassSessionService classSessionService;
 
     @PostMapping("/create")
     public ResponseEntity<ClassSessionDto> createClassSession(@RequestBody ClassSessionDto classSessionDto) {

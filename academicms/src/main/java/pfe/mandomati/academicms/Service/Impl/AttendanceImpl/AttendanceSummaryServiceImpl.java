@@ -1,5 +1,6 @@
 package pfe.mandomati.academicms.Service.Impl.AttendanceImpl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pfe.mandomati.academicms.Dto.AttendanceDto.AttendanceDto;
@@ -15,13 +16,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AttendanceSummaryServiceImpl implements AttendanceSummaryService {
 
-    @Autowired
-    private AttendanceService attendanceService;
+    private final AttendanceService attendanceService;
 
-    @Autowired
-    private ClassSessionRepository classSessionRepository;
+    private final ClassSessionRepository classSessionRepository;
 
     @Override
     public List<AttendanceSummaryDto> getSummaryByStudent(Long studentId) {

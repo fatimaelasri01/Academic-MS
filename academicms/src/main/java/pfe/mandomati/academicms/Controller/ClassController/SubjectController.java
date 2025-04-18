@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Controller.ClassController;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -11,11 +11,11 @@ import pfe.mandomati.academicms.Service.ClassService.SubjectService;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/subject")
 public class SubjectController {
 
-    @Autowired
-    private SubjectService subjectService;
+    private final SubjectService subjectService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")

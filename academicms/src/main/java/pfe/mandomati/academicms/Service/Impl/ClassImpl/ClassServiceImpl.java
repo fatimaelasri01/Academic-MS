@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Service.Impl.ClassImpl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -17,24 +17,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ClassServiceImpl implements ClassService {
 
-    @Autowired
-    private ClassRepository classRepository;
+    private final ClassRepository classRepository;
 
-    @Autowired
-    private FiliereRepository filiereRepository;
+    private final FiliereRepository filiereRepository;
 
     @Override
     @Transactional
     public ClassDto addClass(ClassDto classDto) {
         Filiere filiere = filiereRepository.findByName(classDto.getFiliereName())
                 .orElseThrow(() -> new ClassCreationException("Filiere not found"));
-
-        /*érifier si le numéro de la classe est unique
-        if (classRepository.existsByNumero(classDto.getNumero())) {
-            throw new ClassAlreadyExistsException("Class with this number already exists");
-        }*/
 
         try {
             Class newClass = Class.builder()
@@ -60,11 +54,6 @@ public class ClassServiceImpl implements ClassService {
 
         Filiere filiere = filiereRepository.findByName(classDto.getFiliereName())
                 .orElseThrow(() -> new ClassCreationException("Filiere not found"));
-
-        /*  Vérifier si le numéro de la classe est unique
-        if (!existingClass.getNumero().equals(classDto.getNumero()) && classRepository.existsByNumero(classDto.getNumero())) {
-            throw new ClassAlreadyExistsException("Class with this number already exists");
-        }*/
 
         existingClass.setFiliere(filiere);
         existingClass.setAcademicYear(classDto.getAcademicYear());

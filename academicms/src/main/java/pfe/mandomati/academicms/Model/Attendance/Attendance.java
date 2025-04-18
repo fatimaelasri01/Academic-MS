@@ -21,9 +21,6 @@ public class Attendance {
     private Long id;
     
     @Column(nullable = false)
-    private Long studentId;
-    
-    @Column(nullable = false)
     private String status;
 
     @Builder.Default

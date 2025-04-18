@@ -1,5 +1,6 @@
 package pfe.mandomati.academicms.Service.Impl.AttendanceImpl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pfe.mandomati.academicms.Dto.AttendanceDto.ClassSessionDto;
@@ -12,10 +13,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ClassSessionServiceImpl implements ClassSessionService {
 
-    @Autowired
-    private ClassSessionRepository classSessionRepository;
+    private final ClassSessionRepository classSessionRepository;
 
     @Override
     public ClassSessionDto createClassSession(ClassSessionDto classSessionDto) {

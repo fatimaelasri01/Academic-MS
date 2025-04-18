@@ -22,20 +22,20 @@ public class ClassSession {
     private Long id;
 
     @Column(nullable = false)
-    private Long classId; // ID de la classe
+    private Long classId;
 
     @Column(nullable = false)
-    private Long teacherId; // ID du professeur
+    private Long teacherId;
 
     @Column(nullable = false)
-    private Long subjectId; // ID de la matière
+    private Long subjectId;
 
     @Column(nullable = false)
-    private LocalDate sessionDate; // Date de la session
+    private LocalDate sessionDate;
 
     @Column(nullable = false)
-    private LocalTime startTime; // Heure de début de la session
+    private LocalTime startTime;
 
     @Column(nullable = false)
-    private LocalTime endTime; // Heure de fin de la session
+    private LocalTime endTime;
 }

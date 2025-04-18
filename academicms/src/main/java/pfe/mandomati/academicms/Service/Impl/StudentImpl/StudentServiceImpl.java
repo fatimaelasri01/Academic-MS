@@ -10,7 +10,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,6 @@ import pfe.mandomati.academicms.Repository.ClassRepo.ClassRepository;
 import pfe.mandomati.academicms.Repository.StudentRepo.StudentRepository;
 import pfe.mandomati.academicms.Service.StudentService.StudentService;
 import pfe.mandomati.academicms.Model.Class.Class;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,19 +31,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.Base64;
 
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class StudentServiceImpl implements StudentService {
 
-    private static final Logger logger = LoggerFactory.getLogger(StudentServiceImpl.class);
+    //private static final Logger logger = LoggerFactory.getLogger(StudentServiceImpl.class);
+    private final IamClient iamClient;
 
-    @Autowired
-    private IamClient iamClient;
+    private final StudentRepository studentAcademicProfileRepository;
 
-    @Autowired
-    private StudentRepository studentAcademicProfileRepository;
-
-    @Autowired
-    private ClassRepository classRepository;
+    private final ClassRepository classRepository;
 
     @Override
     @Transactional
@@ -72,18 +69,18 @@ public class StudentServiceImpl implements StudentService {
                     .role(studentRole) // Utilisation de l'objet Role
                     .build();
 
-            logger.info("Sending student data to IAMMS: {}", iamStudentDto);
+            log.info("Sending student data to IAMMS: {}", iamStudentDto);
 
             ResponseEntity<String> studentResponse = iamClient.registerUser(iamStudentDto);
             if (!studentResponse.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("Failed to create student in IAMMS");
             }
 
-            logger.info("student register in IAMMS: {}", studentResponse.getBody());
+            log.info("student register in IAMMS: {}", studentResponse.getBody());
 
             // Extraire l'ID de la réponse
             studentId = extractIdFromResponse(studentResponse.getBody());
-            logger.info("studentId: {}", studentId);
+            log.info("studentId: {}", studentId);
 
             // Vérifier si le parent existe déjà dans la base de données
             List<Student> existingParentProfiles = studentAcademicProfileRepository.findByParentEmail(userDTO.getParentEmail());
@@ -108,25 +105,25 @@ public class StudentServiceImpl implements StudentService {
                         .role(parentRole) // Utilisation de l'objet Role
                         .build();
 
-                logger.info("Sending parent data to IAMMS: {}", iamParentDto);
+                log.info("Sending parent data to IAMMS: {}", iamParentDto);
 
                 ResponseEntity<String> parentResponse = iamClient.registerUser(iamParentDto);
                 if (!parentResponse.getStatusCode().is2xxSuccessful()) {
-                    logger.error("Failed to create parent in IAMMS. Deleting student from IAMMS: {}", userDTO.getUsername());
+                    log.error("Failed to create parent in IAMMS. Deleting student from IAMMS: {}", userDTO.getUsername());
                     iamClient.deleteUser(URLEncoder.encode(userDTO.getUsername(), StandardCharsets.UTF_8.toString()));
                     throw new RuntimeException("Failed to create parent in IAMMS");
                 }
 
-                logger.info("parent register in IAMMS: {}", parentResponse.getBody());
+                log.info("parent register in IAMMS: {}", parentResponse.getBody());
 
                 // Extraire l'ID de la réponse
                 parentId = extractIdFromResponse(parentResponse.getBody());
-                logger.info("parentId: {}", parentId);
+                log.info("parentId: {}", parentId);
             } else {
                 // Utiliser le premier profil parent trouvé
                 Student existingParentProfile = existingParentProfiles.get(0);
                 parentId = existingParentProfile.getParentId();
-                logger.info("Parent already exists in academicms: {}", existingParentProfile);
+                log.info("Parent already exists in academicms: {}", existingParentProfile);
             }
 
             // Rechercher la classe en fonction de filiereName et numero
@@ -151,31 +148,31 @@ public class StudentServiceImpl implements StudentService {
                     .parentEmail(userDTO.getParentEmail())
                     .build();
 
-            logger.info("save studentprofile {}", studentProfile);
+            log.info("save studentprofile {}", studentProfile);
 
             studentAcademicProfileRepository.save(studentProfile);
 
-            logger.info("student profile saved successfully in academicms");
+            log.info("student profile saved successfully in academicms");
 
             return ResponseEntity.ok("User registered successfully");
 
         } catch (Exception e) {
-            logger.error("Failed to register user", e);
+            log.error("Failed to register user", e);
             // Supprimer le parent et l'étudiant de IAMMS en cas d'erreur
             if (parentId != null) {
                 try {
                     iamClient.deleteUser(URLEncoder.encode(userDTO.getParentUsername(), StandardCharsets.UTF_8.toString()));
-                    logger.info("Deleted parent from IAMMS: {}", userDTO.getParentUsername());
+                    log.info("Deleted parent from IAMMS: {}", userDTO.getParentUsername());
                 } catch (Exception ex) {
-                    logger.error("Failed to delete parent from IAMMS", ex);
+                    log.error("Failed to delete parent from IAMMS", ex);
                 }
             }
             if (studentId != null) {
                 try {
                     iamClient.deleteUser(URLEncoder.encode(userDTO.getUsername(), StandardCharsets.UTF_8.toString()));
-                    logger.info("Deleted student from IAMMS: {}", userDTO.getUsername());
+                    log.info("Deleted student from IAMMS: {}", userDTO.getUsername());
                 } catch (Exception ex) {
-                    logger.error("Failed to delete student from IAMMS", ex);
+                    log.error("Failed to delete student from IAMMS", ex);
                 }
             }
             throw new RuntimeException("Failed to register user", e);
@@ -257,7 +254,7 @@ public class StudentServiceImpl implements StudentService {
 
             return ResponseEntity.ok("Student updated successfully");
         } catch (Exception e) {
-            logger.error("Failed to update student", e);
+            log.error("Failed to update student", e);
             throw new RuntimeException("Failed to update student", e);
         }
     }
@@ -279,19 +276,19 @@ public class StudentServiceImpl implements StudentService {
 
             // Supprimer l'étudiant de IAMMS
             iamClient.deleteUser(URLEncoder.encode(studentUsername, StandardCharsets.UTF_8.toString()));
-            logger.info("Deleted student from IAMMS: {}", studentUsername);
+            log.info("Deleted student from IAMMS: {}", studentUsername);
 
             // Vérifier si le parent est lié à d'autres étudiants
             List<Student> remainingProfiles = studentAcademicProfileRepository.findByParentId(parentId);
             if (remainingProfiles.isEmpty()) {
                 // Supprimer le parent de IAMMS
                 iamClient.deleteUser(URLEncoder.encode(existingStudentProfile.getParentEmail(), StandardCharsets.UTF_8.toString()));
-                logger.info("Deleted parent from IAMMS: {}", existingStudentProfile.getParentEmail());
+                log.info("Deleted parent from IAMMS: {}", existingStudentProfile.getParentEmail());
             }
 
             return ResponseEntity.ok("Student deleted successfully");
         } catch (Exception e) {
-            logger.error("Failed to delete student", e);
+            log.error("Failed to delete student", e);
             throw new RuntimeException("Failed to delete student", e);
         }
     }
@@ -313,11 +310,11 @@ public class StudentServiceImpl implements StudentService {
             if (iamStudents == null) {
                 throw new RuntimeException("Failed to retrieve students from IAMMS");
             }
-            logger.info("Retrieved students from IAMMS: {}", iamStudents);
+            log.info("Retrieved students from IAMMS: {}", iamStudents);
             return iamStudents.stream().map(iamStudent -> {
-                logger.info("Processing IAM student: {}", iamStudent);
+                log.info("Processing IAM student: {}", iamStudent);
                 if (iamStudent.getId() == null) {
-                    logger.error("Student ID is null for IAM student: {}", iamStudent);
+                    log.error("Student ID is null for IAM student: {}", iamStudent);
                     throw new RuntimeException("Student ID is null for IAM student");
                 }
                 Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
@@ -326,7 +323,7 @@ public class StudentServiceImpl implements StudentService {
                 return convertToStudentDto(profile, iamStudent);
             }).collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("Failed to get all students", e);
+            log.error("Failed to get all students", e);
             throw new RuntimeException("Failed to get all students", e);
         }
     }
@@ -335,15 +332,15 @@ public class StudentServiceImpl implements StudentService {
     public StudentDto getStudentByStudentId(Long id) {
         try {
 
-            logger.info("Getting student by id: {}", id);
+            log.info("Getting student by id: {}", id);
 
             ResponseEntity<IamDto> responseEntity = iamClient.getStudentById(id.toString());
 
-            logger.info("Response entity: {}", responseEntity);
+            log.info("Response entity: {}", responseEntity);
 
             IamDto iamStudent = responseEntity.getBody();
 
-            logger.info("Retrieved student from IAMMS: {}", iamStudent);
+            log.info("Retrieved student from IAMMS: {}", iamStudent);
 
             if (iamStudent == null) {
                 throw new RuntimeException("Failed to retrieve student from IAMMS for id: " + id);
@@ -353,7 +350,7 @@ public class StudentServiceImpl implements StudentService {
                 new RuntimeException("Student profile not found for studentId: " + id));
             return convertToStudentDto(profile, iamStudent);
         } catch (Exception e) {
-            logger.error("Failed to get student by id", e);
+            log.error("Failed to get student by id", e);
             throw new RuntimeException("Failed to get student by id", e);
         }
     }
@@ -373,7 +370,7 @@ public class StudentServiceImpl implements StudentService {
                     .filter(student -> student.getClassName().equals(classProfile.getFiliere().getName() + classProfile.getNumero()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("Failed to get students by class id", e);
+            log.error("Failed to get students by class id", e);
             throw new RuntimeException("Failed to get students by class id", e);
         }
     }
@@ -381,7 +378,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentDto getStudentByCne(String cne) {
         try {
-            logger.info("Getting student by CNE: {}", cne);
+            log.info("Getting student by CNE: {}", cne);
     
             // Rechercher l'étudiant dans la base de données par CNE
             Student student = studentAcademicProfileRepository.findByCne(cne)
@@ -392,7 +389,7 @@ public class StudentServiceImpl implements StudentService {
             IamDto iamStudent = responseEntity.getBody();
             return convertToStudentDto(student, iamStudent);
         } catch (Exception e) {
-            logger.error("Failed to get student by CNE", e);
+            log.error("Failed to get student by CNE", e);
             throw new RuntimeException("Failed to get student by CNE", e);
         }
     }
@@ -400,7 +397,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<StudentDto> getStudentsByAdmissionDate(Date admissionDate) {
         try {
-            logger.info("Getting students by admission date: {}", admissionDate);
+            log.info("Getting students by admission date: {}", admissionDate);
     
             // Rechercher les étudiants dans la base de données par date d'admission
             List<Student> students = studentAcademicProfileRepository.findByAdmissionDate(admissionDate);
@@ -416,7 +413,7 @@ public class StudentServiceImpl implements StudentService {
                 return convertToStudentDto(student, iamStudent);
             }).collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("Failed to get students by admission date", e);
+            log.error("Failed to get students by admission date", e);
             throw new RuntimeException("Failed to get students by admission date", e);
         }
     }
@@ -424,7 +421,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<StudentDto> getStudentByFullName(String firstname, String lastname) {
         try {
-            logger.info("Getting students by full name: {} {}", firstname, lastname);
+            log.info("Getting students by full name: {} {}", firstname, lastname);
     
             // Appeler IAMMS pour récupérer les utilisateurs par prénom et nom
             ResponseEntity<List<IamDto>> responseEntity = iamClient.getUsersByFirstnameAndLastname(firstname, lastname);
@@ -451,7 +448,7 @@ public class StudentServiceImpl implements StudentService {
                 return convertToStudentDto(profile, iamStudent);
             }).collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("Failed to get students by full name", e);
+            log.error("Failed to get students by full name", e);
             throw new RuntimeException("Failed to get students by full name", e);
         }
     }
@@ -459,7 +456,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentDto getStudentByEmail(String email) {
         try {
-            logger.info("Getting student by email: {}", email);
+            log.info("Getting student by email: {}", email);
     
             // Appeler IAMMS pour récupérer l'utilisateur par email
             ResponseEntity<IamDto> responseEntity = iamClient.getUserByEmail(email);
@@ -476,7 +473,7 @@ public class StudentServiceImpl implements StudentService {
     
             return convertToStudentDto(profile, iamStudent);
         } catch (Exception e) {
-            logger.error("Failed to get student by email", e);
+            log.error("Failed to get student by email", e);
             throw new RuntimeException("Failed to get student by email", e);
         }
     }
@@ -484,7 +481,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentDto getStudentByToken(String token) {
         try {
-            logger.info("Extracting username from token: {}", token);
+            log.info("Extracting username from token: {}", token);
     
             // Extraire le username à partir du token
             String username = extractUsernameFromToken(token);
@@ -492,7 +489,7 @@ public class StudentServiceImpl implements StudentService {
                 throw new RuntimeException("Invalid token: Unable to extract username");
             }
     
-            logger.info("Username extracted from token: {}", username);
+            log.info("Username extracted from token: {}", username);
     
             // Récupérer les informations de l'utilisateur à partir du service IAMMS
             ResponseEntity<IamDto> responseEntity = iamClient.getUserByUsername(username);
@@ -502,7 +499,7 @@ public class StudentServiceImpl implements StudentService {
                     throw new RuntimeException("User not found in IAMMS for username: " + username);
                 }
     
-                logger.info("Retrieved student from IAMMS: {}", iamStudent);
+                log.info("Retrieved student from IAMMS: {}", iamStudent);
     
                 // Retrieve academic profile
                 Optional<Student> profileOptional = studentAcademicProfileRepository.findById(iamStudent.getId());
@@ -516,7 +513,7 @@ public class StudentServiceImpl implements StudentService {
                 throw new RuntimeException("Failed to retrieve user from IAMMS: " + errorMessage);
             }
         } catch (Exception e) {
-            logger.error("Failed to get student by token", e);
+            log.error("Failed to get student by token", e);
             throw new RuntimeException("Failed to get student by token", e);
         }
     }

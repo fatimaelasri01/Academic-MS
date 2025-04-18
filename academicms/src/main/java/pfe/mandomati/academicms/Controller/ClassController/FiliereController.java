@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Controller.ClassController;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,11 +12,11 @@ import pfe.mandomati.academicms.Service.ClassService.FiliereService;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/filiere")
 public class FiliereController {
 
-    @Autowired
-    private FiliereService filiereService;
+    private final FiliereService filiereService;
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")

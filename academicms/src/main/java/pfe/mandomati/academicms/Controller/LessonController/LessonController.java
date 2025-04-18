@@ -2,7 +2,7 @@ package pfe.mandomati.academicms.Controller.LessonController;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,11 +10,11 @@ import pfe.mandomati.academicms.Dto.LessonDto.LessonDto;
 import pfe.mandomati.academicms.Service.LessonService.LessonService;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/lessons")
 public class LessonController {
 
-    @Autowired
-    private  LessonService lessonService;
+    private final  LessonService lessonService;
 
     @PostMapping("/create")
     public ResponseEntity<LessonDto> createLesson(@RequestBody LessonDto lessonDto) {

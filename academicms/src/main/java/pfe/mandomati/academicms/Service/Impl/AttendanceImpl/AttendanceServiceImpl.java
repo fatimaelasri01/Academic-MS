@@ -2,6 +2,7 @@ package pfe.mandomati.academicms.Service.Impl.AttendanceImpl;
 
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,20 +22,14 @@ import pfe.mandomati.academicms.Service.AttendanceService.AttendanceService;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
 
-    @Autowired
-    private AttendanceRepository attendanceRepository;
+    private final AttendanceRepository attendanceRepository;
 
-    @Autowired
-    private ClassSessionRepository classSessionRepository;
+    private final ClassSessionRepository classSessionRepository;
 
-    @Autowired
-    private StudentRepository studentAcademicProfileRepository;
-    //@Autowired
-    //private ClassScheduleService classScheduleService;
-
-    //private static final Logger logger = LoggerFactory.getLogger(AttendanceServiceImpl.class);
+    private final StudentRepository studentAcademicProfileRepository;
 
     @Override
     public AttendanceDto createAttendance(AttendanceDto attendanceDto) {

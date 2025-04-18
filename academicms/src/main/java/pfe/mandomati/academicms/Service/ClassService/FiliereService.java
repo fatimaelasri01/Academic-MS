@@ -10,5 +10,5 @@ public interface FiliereService {
     void deleteFiliere(Long id);
     List<FiliereDto> getAllFilieres();
     FiliereDto getFiliereById(Long id);
-    List<FiliereDto> getAllFilieresWithSubjects(); // Ajout de la méthode
+    List<FiliereDto> getAllFilieresWithSubjects();
 }

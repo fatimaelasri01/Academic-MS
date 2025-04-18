@@ -1,6 +1,6 @@
 package pfe.mandomati.academicms.Service.Impl.ScheduleImpl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,27 +8,28 @@ import org.springframework.web.multipart.MultipartFile;
 import pfe.mandomati.academicms.Dto.ScheduleDto.ClassScheduleDto;
 import pfe.mandomati.academicms.Model.Schedule.ClassSchedule;
 import pfe.mandomati.academicms.Repository.ScheduleRepo.ClassScheduleRepository;
+import pfe.mandomati.academicms.Service.Impl.Utils.FileUtil;
 import pfe.mandomati.academicms.Service.ScheduleService.ClassScheduleService;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+@RequiredArgsConstructor
 @Service
 public class ClassScheduleServiceImpl implements ClassScheduleService {
 
-    @Autowired
-    private ClassScheduleRepository classScheduleRepository;
 
-    @Value("${upload.directory}")
+    private final ClassScheduleRepository classScheduleRepository;
+
+    @Value("${file.upload.schedule-directory}")
     private String uploadDir; // Répertoire pour stocker les fichiers
 
     @Override
     public ClassScheduleDto createClassSchedule(ClassScheduleDto classScheduleDto, MultipartFile file) {
         try {
             // Sauvegarder le fichier
-            String filePath = saveFile(file);
+            String filePath = FileUtil.saveFile(uploadDir, file);
 
             // Créer l'entité ClassSchedule
             ClassSchedule classSchedule = ClassSchedule.builder()
@@ -52,8 +53,8 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
             // Supprimer l'ancien fichier si un nouveau fichier est uploadé
             if (file != null) {
-                deleteFile(existingClassSchedule.getPathFile());
-                String filePath = saveFile(file);
+                FileUtil.deleteFile(existingClassSchedule.getPathFile());
+                String filePath = FileUtil.saveFile(uploadDir, file);
                 existingClassSchedule.setPathFile(filePath);
             }
 
@@ -74,7 +75,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                     .orElseThrow(() -> new RuntimeException("ClassSchedule not found with id " + id));
 
             // Supprimer le fichier associé
-            deleteFile(existingClassSchedule.getPathFile());
+            FileUtil.deleteFile(existingClassSchedule.getPathFile());
 
             classScheduleRepository.delete(existingClassSchedule);
         } catch (Exception e) {
@@ -110,22 +111,5 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                 classSchedule.getPathFile(),
                 classSchedule.getTotalHour()
         );
-    }
-
-    private String saveFile(MultipartFile file) throws IOException {
-        File uploadDirFile = new File(uploadDir);
-        if (!uploadDirFile.exists()) {
-            uploadDirFile.mkdirs();
-        }
-        String filePath = uploadDir + file.getOriginalFilename();
-        file.transferTo(new File(filePath));
-        return filePath;
-    }
-
-    private void deleteFile(String filePath) {
-        File file = new File(filePath);
-        if (file.exists()) {
-            file.delete();
-        }
     }
 }
