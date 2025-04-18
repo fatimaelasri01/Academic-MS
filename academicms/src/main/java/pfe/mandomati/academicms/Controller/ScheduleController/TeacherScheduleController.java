@@ -19,8 +19,9 @@ public class TeacherScheduleController {
     @PostMapping
     public ResponseEntity<TeacherScheduleDto> createTeacherSchedule(
             @RequestPart("teacherSchedule") TeacherScheduleDto teacherScheduleDto,
-            @RequestPart("file") MultipartFile file) {
-        return ResponseEntity.ok(teacherScheduleService.createTeacherSchedule(teacherScheduleDto, file));
+            @RequestPart("file") MultipartFile file,
+            @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(teacherScheduleService.createTeacherSchedule(teacherScheduleDto, file, token));
     }
 
     @PutMapping("/{id}")
@@ -50,6 +51,6 @@ public class TeacherScheduleController {
     @GetMapping("/by-teacher")
     public ResponseEntity<TeacherScheduleDto> getTeacherScheduleByTeacher(
             @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(teacherScheduleService.getTeacherScheduleByTeacher(teacherId, token));
+        return ResponseEntity.ok(teacherScheduleService.getTeacherScheduleByTeacher(token));
     }
 }

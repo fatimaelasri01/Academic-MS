@@ -14,6 +14,7 @@ import pfe.mandomati.academicms.Repository.ScheduleRepo.TeacherScheduleRepositor
 import pfe.mandomati.academicms.Service.Impl.Utils.ExtractUsernameFromToken;
 import pfe.mandomati.academicms.Service.Impl.Utils.FileUtil;
 import pfe.mandomati.academicms.Service.ScheduleService.TeacherScheduleService;
+import pfe.mandomati.academicms.Client.RhClient;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,14 +25,20 @@ public class TeacherScheduleServiceImpl implements TeacherScheduleService {
 
     private final TeacherScheduleRepository teacherScheduleRepository;
     private final IamClient iamClient;
+    private final RhClient rhClient;
 
     @Value("${file.upload.schedule-directory}")
     private String uploadDir;
 
     @Override
-    public TeacherScheduleDto createTeacherSchedule(TeacherScheduleDto teacherScheduleDto, MultipartFile file) {
+    public TeacherScheduleDto createTeacherSchedule(TeacherScheduleDto teacherScheduleDto, MultipartFile file, String token) {
         try {
             String filePath = FileUtil.saveFile(uploadDir, file, "teacher-schedule");
+
+            ResponseEntity<?> teacherResponse = rhClient.getTeacherById(teacherScheduleDto.getTeacherId(), token);
+            if (!teacherResponse.getStatusCode().is2xxSuccessful()) {
+                throw new ResourceNotFoundException("Teacher not found with id " + teacherScheduleDto.getTeacherId());
+            }
 
             TeacherSchedule teacherSchedule = TeacherSchedule.builder()
                     .teacherId(teacherScheduleDto.getTeacherId())
@@ -105,7 +112,7 @@ public class TeacherScheduleServiceImpl implements TeacherScheduleService {
     }
 
     @Override
-    public TeacherScheduleDto findByTeacher(String token) {
+    public TeacherScheduleDto getTeacherScheduleByTeacher(String token) {
         try {
             String username = ExtractUsernameFromToken.extractUsernameFromToken(token);
             if (username == null || username.isEmpty()) {
