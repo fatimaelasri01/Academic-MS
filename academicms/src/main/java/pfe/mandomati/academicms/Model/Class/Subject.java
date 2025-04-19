@@ -39,7 +39,4 @@ public class Subject {
 
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
     private Set<Lesson> lessons = new HashSet<>();
-    
-    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
-    private Set<Evaluation> evaluations = new HashSet<>();
 }

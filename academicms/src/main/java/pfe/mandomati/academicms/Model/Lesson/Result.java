@@ -30,10 +30,6 @@ public class Result {
     private String gradeLetter;
     
     private LocalDate gradeDate;
-    
-    @ManyToOne
-    @JoinColumn(name = "evaluation_id")
-    private Evaluation evaluation;
 
     @ManyToOne
     @JoinColumn(name = "student_id")

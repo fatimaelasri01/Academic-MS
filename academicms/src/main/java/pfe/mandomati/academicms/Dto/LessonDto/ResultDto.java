@@ -19,5 +19,4 @@ public class ResultDto {
     private String remarks;
     private String gradeLetter;
     private LocalDate gradeDate;
-    private Long evaluationId;
 }

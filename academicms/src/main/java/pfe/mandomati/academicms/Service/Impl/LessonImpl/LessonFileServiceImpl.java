@@ -1,6 +1,8 @@
 package pfe.mandomati.academicms.Service.Impl.LessonImpl;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
@@ -23,6 +26,7 @@ import pfe.mandomati.academicms.Service.Impl.Utils.FileUtil;
 import pfe.mandomati.academicms.Service.LessonService.LessonFileService;
 
 @Service
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 public class LessonFileServiceImpl implements LessonFileService {
@@ -35,6 +39,22 @@ public class LessonFileServiceImpl implements LessonFileService {
     @Value("${file.upload.lesson-directory}")
     private String uploadDirectory;
 
+    private static final Set<String> ALLOWED_MIME_TYPES = Set.of(
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "image/jpeg",
+            "image/png"
+    );
+
+    @PostConstruct
+    public void init() {
+        try {
+            Files.createDirectories(Paths.get(uploadDirectory));
+        } catch (IOException e) {
+            log.error("Erreur lors de la création du répertoire de stockage", e);
+        }
+    }
+
     @Override
     public Set<FileInfoDto> getFilesByLessonId(Long lessonId) {
         Lesson lesson = lessonRepository.findById(lessonId)
@@ -46,6 +66,13 @@ public class LessonFileServiceImpl implements LessonFileService {
 
     @Override
     public FileInfoDto addFileToLesson(Long lessonId, MultipartFile file, LessonFile.FileType type) {
+        log.info("Upload de fichier pour la leçon {} - Type: {}", lessonId, type);
+
+        // Validation du type MIME
+        if (!ALLOWED_MIME_TYPES.contains(file.getContentType())) {
+            log.warn("Type de fichier non autorisé: {}", file.getContentType());
+            throw new IllegalArgumentException("Type de fichier non supporté");
+        }
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
         
@@ -62,6 +89,8 @@ public class LessonFileServiceImpl implements LessonFileService {
             lessonFile.setFilePath(filePath);
             lessonFile.setType(type);
             lessonFile.setLesson(lesson);
+
+            log.info("Fichier enregistré: {}", filePath);
             
             LessonFile savedFile = lessonFileRepository.save(lessonFile);
             return mapFileEntityToDto(savedFile);
@@ -78,7 +107,7 @@ public class LessonFileServiceImpl implements LessonFileService {
 
         try {
             FileUtil.deleteFile(lessonFile.getFilePath());
-            //Files.deleteIfExists(Paths.get(lessonFile.getFilePath()));
+            log.info("Fichier supprimé: {}", lessonFile.getFilePath());
             lessonFileRepository.delete(lessonFile);
         } catch (Exception e) {
             throw new RuntimeException("Could not delete the file. Error: " + e.getMessage());
@@ -92,16 +121,17 @@ public class LessonFileServiceImpl implements LessonFileService {
                     "File not found with id: " + fileId + " for lesson id: " + lessonId));
         
         try {
-            Path filePath = Paths.get(lessonFile.getFilePath());
+            Path filePath = Paths.get(lessonFile.getFilePath()).normalize();
             Resource resource = new UrlResource(filePath.toUri());
-            
-            if (resource.exists() && resource.isReadable()) {
-                return resource;
-            } else {
-                throw new RuntimeException("Could not read the file!");
+
+            if (!resource.exists() || !resource.isReadable()) {
+                log.error("Fichier inaccessible: {}", filePath);
+                throw new RuntimeException("Fichier inaccessible");
             }
+            return resource;
         } catch (Exception e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+            log.error("Erreur lors du téléchargement", e);
+            throw new RuntimeException("Erreur de téléchargement", e);
         }
     }
 

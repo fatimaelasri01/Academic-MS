@@ -1,5 +1,7 @@
 package pfe.mandomati.academicms.Controller.LessonController;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +15,8 @@ import pfe.mandomati.academicms.Model.Lesson.LessonFile;
 import pfe.mandomati.academicms.Service.LessonService.LessonFileService;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 @RestController
@@ -29,12 +33,22 @@ public class LessonFileController {
     }
 
     @PostMapping
-    public ResponseEntity<FileInfoDto> addFileToLesson(
+    public ResponseEntity<?> addFileToLesson(
             @PathVariable Long lessonId,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("type") LessonFile.FileType type) {
-        FileInfoDto fileInfoDto = lessonFileService.addFileToLesson(lessonId, file, type);
-        return ResponseEntity.ok(fileInfoDto);
+            @RequestParam("file") @Valid MultipartFile file,
+            @RequestParam("type") @NotNull LessonFile.FileType type) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("Le fichier ne peut pas être vide");
+        }
+
+        try {
+            FileInfoDto fileInfoDto = lessonFileService.addFileToLesson(lessonId, file, type);
+            return ResponseEntity.ok(fileInfoDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erreur lors de l'upload");
+        }
     }
 
     @DeleteMapping("/{fileId}")
@@ -51,11 +65,16 @@ public class LessonFileController {
             @PathVariable Long fileId) throws IOException {
         
         Resource resource = lessonFileService.downloadFile(lessonId, fileId);
-        
+
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, 
-                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + encodeFilename(resource.getFilename()) + "\"")
                 .body(resource);
+    }
+
+    private String encodeFilename(String filename) {
+        return URLEncoder.encode(filename, StandardCharsets.UTF_8)
+                .replace("+", "%20");
     }
 }

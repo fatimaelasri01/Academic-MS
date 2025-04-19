@@ -6,6 +6,7 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import pfe.mandomati.academicms.Model.Lesson.Evaluation;
 import pfe.mandomati.academicms.Model.Student.*;
 
 import java.util.Date;
@@ -54,4 +55,7 @@ public class Class {
 
     @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
     private Set<TeacherAssignment> teacherAssignments = new HashSet<>();
+
+    @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
+    private Set<Evaluation> evaluations = new HashSet<>();
 }
